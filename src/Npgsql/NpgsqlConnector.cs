@@ -1853,26 +1853,31 @@ namespace Npgsql
                 sb.Append("CLOSE ALL;");
                 _resetWithoutDeallocateResponseCount++;
             }
-            if (DatabaseInfo.SupportsUnlisten)
-            {
-                sb.Append("UNLISTEN *;");
-                _resetWithoutDeallocateResponseCount++;
-            }
+
+            //TODO: OpenGauss不支持
+            //if (DatabaseInfo.SupportsUnlisten)
+            //{
+            //    sb.Append("UNLISTEN *;");
+            //    _resetWithoutDeallocateResponseCount++;
+            //}
+
             if (DatabaseInfo.SupportsAdvisoryLocks)
             {
                 sb.Append("SELECT pg_advisory_unlock_all();");
                 _resetWithoutDeallocateResponseCount += 2;
             }
-            if (DatabaseInfo.SupportsDiscardSequences)
-            {
-                sb.Append("DISCARD SEQUENCES;");
-                _resetWithoutDeallocateResponseCount++;
-            }
-            if (DatabaseInfo.SupportsDiscardTemp)
-            {
-                sb.Append("DISCARD TEMP");
-                _resetWithoutDeallocateResponseCount++;
-            }
+
+            //TODO: OpenGauss不支持
+            //if (DatabaseInfo.SupportsDiscardSequences)
+            //{
+            //    sb.Append("DISCARD SEQUENCES;");
+            //    _resetWithoutDeallocateResponseCount++;
+            //}
+            //if (DatabaseInfo.SupportsDiscardTemp)
+            //{
+            //    sb.Append("DISCARD TEMP");
+            //    _resetWithoutDeallocateResponseCount++;
+            //}
 
             _resetWithoutDeallocateResponseCount++;  // One ReadyForQuery at the end
 
@@ -1927,18 +1932,20 @@ namespace Npgsql
 
                 if (_sendResetOnClose)
                 {
-                    if (PreparedStatementManager.NumPrepared > 0)
-                    {
-                        // We have prepared statements, so we can't reset the connection state with DISCARD ALL
-                        // Note: the send buffer has been cleared above, and we assume all this will fit in it.
-                        PrependInternalMessage(_resetWithoutDeallocateMessage!, _resetWithoutDeallocateResponseCount);
-                    }
-                    else
-                    {
-                        // There are no prepared statements.
-                        // We simply send DISCARD ALL which is more efficient than sending the above messages separately
-                        PrependInternalMessage(PregeneratedMessages.DiscardAll, 2);
-                    }
+                    PrependInternalMessage(_resetWithoutDeallocateMessage!, _resetWithoutDeallocateResponseCount);
+
+                    //if (PreparedStatementManager.NumPrepared > 0)
+                    //{
+                    //    // We have prepared statements, so we can't reset the connection state with DISCARD ALL
+                    //    // Note: the send buffer has been cleared above, and we assume all this will fit in it.
+                    //    PrependInternalMessage(_resetWithoutDeallocateMessage!, _resetWithoutDeallocateResponseCount);
+                    //}
+                    //else
+                    //{
+                    //    // There are no prepared statements.
+                    //    // We simply send DISCARD ALL which is more efficient than sending the above messages separately
+                    //    PrependInternalMessage(PregeneratedMessages.DiscardAll, 2);
+                    //}
                 }
 
                 DataReader.UnbindIfNecessary();
