@@ -366,7 +366,7 @@ namespace Npgsql
 
         internal void WriteStartup(Dictionary<string, string> parameters)
         {
-            const int protocolVersion3 = 3 << 16; // 196608
+            //const int protocolVersion3 = 3 << 16; // 196608
 
             var len = sizeof(int) +  // Length
                       sizeof(int) +  // Protocol version
@@ -381,7 +381,10 @@ namespace Npgsql
                 throw new Exception("Startup message bigger than buffer");
 
             WriteBuffer.WriteInt32(len);
-            WriteBuffer.WriteInt32(protocolVersion3);
+
+            //protocolVersion = 351
+            WriteBuffer.WriteInt16(3);
+            WriteBuffer.WriteInt16(51);
 
             foreach (var kv in parameters)
             {
@@ -396,52 +399,15 @@ namespace Npgsql
 
         #region Authentication
 
-        internal Task WritePassword(byte[] payload, bool async, CancellationToken cancellationToken = default) => WritePassword(payload, 0, payload.Length, async, cancellationToken);
-
-        internal async Task WritePassword(byte[] payload, int offset, int count, bool async, CancellationToken cancellationToken = default)
+        internal async Task WritePassword(byte[] payload, bool async, CancellationToken cancellationToken = default)
         {
-            if (WriteBuffer.WriteSpaceLeft < sizeof(byte) + sizeof(int))
-                await WriteBuffer.Flush(async, cancellationToken);
-            WriteBuffer.WriteByte(FrontendMessageCode.Password);
-            WriteBuffer.WriteInt32(sizeof(int) + count);
-
-            if (count <= WriteBuffer.WriteSpaceLeft)
-            {
-                // The entire array fits in our WriteBuffer, copy it into the WriteBuffer as usual.
-                WriteBuffer.WriteBytes(payload, offset, count);
-                return;
-            }
+            WriteBuffer.WriteByte((byte)112);
+            WriteBuffer.WriteInt32(4 + payload.Length + 1);
+            WriteBuffer.WriteBytes(payload);
+            WriteBuffer.WriteByte(0);
 
             await WriteBuffer.Flush(async, cancellationToken);
-            await WriteBuffer.DirectWrite(new ReadOnlyMemory<byte>(payload, offset, count), async, cancellationToken);
         }
-
-        internal async Task WriteSASLInitialResponse(string mechanism, byte[] initialResponse, bool async, CancellationToken cancellationToken = default)
-        {
-            var len = sizeof(byte)                                               +  // Message code
-                      sizeof(int)                                                +  // Length
-                      PGUtil.UTF8Encoding.GetByteCount(mechanism) + sizeof(byte) +  // Mechanism plus null terminator
-                      sizeof(int)                                                +  // Initial response length
-                      (initialResponse?.Length ?? 0);                               // Initial response payload
-
-            if (WriteBuffer.WriteSpaceLeft < len)
-                await WriteBuffer.Flush(async, cancellationToken);
-
-            WriteBuffer.WriteByte(FrontendMessageCode.Password);
-            WriteBuffer.WriteInt32(len - 1);
-
-            WriteBuffer.WriteString(mechanism);
-            WriteBuffer.WriteByte(0);   // null terminator
-            if (initialResponse == null)
-                WriteBuffer.WriteInt32(-1);
-            else
-            {
-                WriteBuffer.WriteInt32(initialResponse.Length);
-                WriteBuffer.WriteBytes(initialResponse);
-            }
-        }
-
-        internal Task WriteSASLResponse(byte[] payload, bool async, CancellationToken cancellationToken = default) => WritePassword(payload, async, cancellationToken);
 
         #endregion Authentication
 

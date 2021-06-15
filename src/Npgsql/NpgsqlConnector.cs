@@ -1299,14 +1299,8 @@ namespace Npgsql
                     return authType switch
                     {
                         AuthenticationRequestType.AuthenticationOk                => (AuthenticationRequestMessage)AuthenticationOkMessage.Instance,
-                        AuthenticationRequestType.AuthenticationCleartextPassword => AuthenticationCleartextPasswordMessage.Instance,
-                        AuthenticationRequestType.AuthenticationMD5Password       => AuthenticationMD5PasswordMessage.Load(buf),
-                        AuthenticationRequestType.AuthenticationGSS               => AuthenticationGSSMessage.Instance,
-                        AuthenticationRequestType.AuthenticationSSPI              => AuthenticationSSPIMessage.Instance,
-                        AuthenticationRequestType.AuthenticationGSSContinue       => AuthenticationGSSContinueMessage.Load(buf, len),
-                        AuthenticationRequestType.AuthenticationSASL              => new AuthenticationSASLMessage(buf),
-                        AuthenticationRequestType.AuthenticationSASLContinue      => new AuthenticationSASLContinueMessage(buf, len - 4),
-                        AuthenticationRequestType.AuthenticationSASLFinal         => new AuthenticationSASLFinalMessage(buf, len - 4),
+                        AuthenticationRequestType.AuthenticationPassword => new AuthenticationPasswordMessage(buf),
+
                         _ => throw new NotSupportedException($"Authentication method not supported (Received: {authType})")
                     };
 
