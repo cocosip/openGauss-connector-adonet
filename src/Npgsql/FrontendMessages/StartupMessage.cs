@@ -21,10 +21,7 @@
 // TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endregion
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Npgsql.FrontendMessages
 {
@@ -33,7 +30,7 @@ namespace Npgsql.FrontendMessages
         readonly Dictionary<string, string> _parameters = new Dictionary<string, string>();
         int _length;
 
-        const int ProtocolVersion3 = 3 << 16; // 196608
+        //const int ProtocolVersion3 = 3 << 16; // 196608
 
         internal string this[string key]
         {
@@ -58,7 +55,10 @@ namespace Npgsql.FrontendMessages
         internal override void WriteFully(WriteBuffer buf)
         {
             buf.WriteInt32(_length);
-            buf.WriteInt32(ProtocolVersion3);
+
+            //protocolVersion = 351
+            buf.WriteInt16(3);
+            buf.WriteInt16(51);
 
             foreach (var kv in _parameters)
             {

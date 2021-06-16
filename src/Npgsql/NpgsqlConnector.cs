@@ -1022,22 +1022,9 @@ namespace Npgsql
                     {
                         case AuthenticationRequestType.AuthenticationOk:
                             return AuthenticationOkMessage.Instance;
-                        case AuthenticationRequestType.AuthenticationCleartextPassword:
-                            return AuthenticationCleartextPasswordMessage.Instance;
-                        case AuthenticationRequestType.AuthenticationMD5Password:
-                            return AuthenticationMD5PasswordMessage.Load(buf);
-                        case AuthenticationRequestType.AuthenticationGSS:
-                            return AuthenticationGSSMessage.Instance;
-                        case AuthenticationRequestType.AuthenticationSSPI:
-                            return AuthenticationSSPIMessage.Instance;
-                        case AuthenticationRequestType.AuthenticationGSSContinue:
-                            return AuthenticationGSSContinueMessage.Load(buf, len);
-                        case AuthenticationRequestType.AuthenticationSASL:
-                            return new AuthenticationSASLMessage(buf);
-                        case AuthenticationRequestType.AuthenticationSASLContinue:
-                            return new AuthenticationSASLContinueMessage(buf, len - 4);
-                        case AuthenticationRequestType.AuthenticationSASLFinal:
-                            return new AuthenticationSASLFinalMessage(buf, len - 4);
+                        case AuthenticationRequestType.AuthenticationPassword:
+                            return new AuthenticationPasswordMessage(buf);
+                      
                         default:
                             throw new NotSupportedException($"Authentication method not supported (Received: {authType})");
                     }

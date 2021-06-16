@@ -22,231 +22,122 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
-using Npgsql.BackendMessages;
 
 namespace Npgsql.FrontendMessages
 {
-    class PasswordMessage : FrontendMessage
-    {
-        internal byte[] Payload { get; private set; }
-        internal int PayloadOffset { get; private set; }
-        internal int PayloadLength { get; private set; }
-
-        const byte Code = (byte)'p';
-
-        internal static PasswordMessage CreateClearText(string password)
-        {
-            var encoded = new byte[Encoding.UTF8.GetByteCount(password) + 1];
-            Encoding.UTF8.GetBytes(password, 0, password.Length, encoded, 0);
-            encoded[encoded.Length - 1] = 0;
-            return new PasswordMessage(encoded);
-        }
-
-        /// <summary>
-        /// Creates an MD5 password message.
-        /// This is the password, hashed with the username as salt, and hashed again with the backend-provided
-        /// salt.
-        /// </summary>
-        internal static PasswordMessage CreateMD5(string password, string username, byte[] serverSalt)
-        {
-            var md5 = MD5.Create();
-
-            // First phase
-            var passwordBytes = PGUtil.UTF8Encoding.GetBytes(password);
-            var usernameBytes = PGUtil.UTF8Encoding.GetBytes(username);
-            var cryptBuf = new byte[passwordBytes.Length + usernameBytes.Length];
-            passwordBytes.CopyTo(cryptBuf, 0);
-            usernameBytes.CopyTo(cryptBuf, passwordBytes.Length);
-
-            var sb = new StringBuilder();
-            var hashResult = md5.ComputeHash(cryptBuf);
-            foreach (var b in hashResult)
-                sb.Append(b.ToString("x2"));
-
-            var prehash = sb.ToString();
-
-            var prehashbytes = PGUtil.UTF8Encoding.GetBytes(prehash);
-            cryptBuf = new byte[prehashbytes.Length + 4];
-
-            Array.Copy(serverSalt, 0, cryptBuf, prehashbytes.Length, 4);
-
-            // 2.
-            prehashbytes.CopyTo(cryptBuf, 0);
-
-            sb = new StringBuilder("md5");
-            hashResult = md5.ComputeHash(cryptBuf);
-            foreach (var b in hashResult)
-                sb.Append(b.ToString("x2"));
-
-            var resultString = sb.ToString();
-            var result = new byte[Encoding.UTF8.GetByteCount(resultString) + 1];
-            Encoding.UTF8.GetBytes(resultString, 0, resultString.Length, result, 0);
-            result[result.Length - 1] = 0;
-
-            return new PasswordMessage(result);
-        }
-
-        internal PasswordMessage() {}
-
-        PasswordMessage(byte[] payload)
-        {
-            Payload = payload;
-            PayloadOffset = 0;
-            PayloadLength = payload.Length;
-        }
-
-        internal PasswordMessage Populate(byte[] payload, int offset, int count)
-        {
-            Payload = payload;
-            PayloadOffset = offset;
-            PayloadLength = count;
-            return this;
-        }
-
-        internal override async Task Write(WriteBuffer buf, bool async, CancellationToken cancellationToken)
-        {
-            if (buf.WriteSpaceLeft < 1 + 5)
-                await buf.Flush(async);
-            buf.WriteByte(Code);
-            buf.WriteInt32(4 + PayloadLength);
-
-            if (PayloadLength <= buf.WriteSpaceLeft)
-            {
-                // The entire array fits in our buffer, copy it into the buffer as usual.
-                buf.WriteBytes(Payload, PayloadOffset, Payload.Length);
-                return;
-            }
-
-            await buf.Flush(async);
-            buf.DirectWrite(Payload, PayloadOffset, PayloadLength);
-        }
-
-        public override string ToString() =>  "[Password]";
-    }
-
-    #region SASL
-
-    // TODO: Refactor above password messages into different classes to harmonize, clean up
-    class SASLInitialResponseMessage : SimpleFrontendMessage
+    class PasswordResponseMessage : SimpleFrontendMessage
     {
         const byte Code = (byte)'p';
-        readonly string _mechanism;
-        [CanBeNull]
-        readonly byte[] _initialResponse;
-
-        internal SASLInitialResponseMessage(string mechanism, byte[] initialResponse)
-        {
-            _mechanism = mechanism;
-            _initialResponse = initialResponse;
-        }
-
-        internal override int Length =>
-            1 + 4 +
-            PGUtil.UTF8Encoding.GetByteCount(_mechanism) + 1 +
-            4 + _initialResponse?.Length ?? 0;
-
-        internal override void WriteFully(WriteBuffer buf)
-        {
-            buf.WriteByte(Code);
-            buf.WriteInt32(Length - 1);
-
-            buf.WriteString(_mechanism);
-            buf.WriteByte(0);   // null terminator
-            if (_initialResponse == null)
-                buf.WriteInt32(-1);
-            else
-            {
-                buf.WriteInt32(_initialResponse.Length);
-                buf.WriteBytes(_initialResponse);
-            }
-        }
-    }
-
-    class SCRAMClientFinalMessage : SimpleFrontendMessage
-    {
-        const byte Code = (byte)'p';
-
-        readonly string _messageStr;
 
         const string ClientKey = "Client Key";
         const string ServerKey = "Server Key";
 
-        internal byte[] ServerSignature { get; }
+        internal byte[] Result { get; }
 
-        internal SCRAMClientFinalMessage(string password, string serverNonce, string salt, int serverIteration, string clientNonce)
+        internal PasswordResponseMessage(string password, string random64Code, string token, int serverIteration)
         {
-            var saltBytes = Convert.FromBase64String(salt);
-            var saltedPassword = Hi(password.Normalize(NormalizationForm.FormKC), saltBytes, serverIteration);
-
-            var clientKey = HMAC(saltedPassword, ClientKey);
-            var storedKey = SHA256.Create().ComputeHash(clientKey);
-
-            var clientFirstMessageBare = "n=*,r=" + clientNonce;
-            var serverFirstMessage = $"r={serverNonce},s={salt},i={serverIteration}";
-            var clientFinalMessageWithoutProof = "c=biws,r=" + serverNonce;
-
-            var authMessage = $"{clientFirstMessageBare},{serverFirstMessage},{clientFinalMessageWithoutProof}";
-
-            var clientSignature = HMAC(storedKey, authMessage);
-            var clientProofBytes = XOR(clientKey, clientSignature);
-            var clientProof = Convert.ToBase64String(clientProofBytes);
-
-            var serverKey = HMAC(saltedPassword, ServerKey);
-            var serverSignatureBytes = HMAC(serverKey, authMessage);
-            ServerSignature = serverSignatureBytes;
-
-            _messageStr = $"{clientFinalMessageWithoutProof},p={clientProof}";
+            Result = RFC5802Algorithm(password, random64Code, token, serverIteration);
         }
 
-        internal override int Length => 1 + 4 + PGUtil.UTF8Encoding.GetByteCount(_messageStr);
+        internal override int Length => 1 + 4 + Result.Length + 1;
 
         internal override void WriteFully(WriteBuffer buf)
         {
             buf.WriteByte(Code);
             buf.WriteInt32(Length - 1);
-            buf.WriteString(_messageStr);
+            buf.WriteBytes(Result);
+            buf.WriteByte(0);
         }
 
-        static byte[] Hi(string str, byte[] salt, int count)
+        static byte[] RFC5802Algorithm(string password, string random64code, string token, int server_iteration)
         {
-            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(str)))
+            var K = GenerateKFromPBKDF2(password, random64code, server_iteration);
+
+            var server_key = GetKeyFromHmac(K, Encoding.UTF8.GetBytes(ServerKey));
+            var client_key = GetKeyFromHmac(K, Encoding.UTF8.GetBytes(ClientKey));
+
+            byte[] stored_key;
+            using (var sha256 = SHA256.Create())
+                stored_key = sha256.ComputeHash(client_key);
+
+            var tokenbyte = HexStringToBytes(token);
+
+            //byte[] client_signature = GetKeyFromHmac(server_key, tokenbyte);
+
+            //if (server_signature != null && server_signature != BytesToHexString(client_signature))
+            //{
+            //    return new byte[0];
+            //}
+
+            var hmac_result = GetKeyFromHmac(stored_key, tokenbyte);
+            var h = XOR_between_password(hmac_result, client_key, client_key.Length);
+
+            var result = new byte[h.Length * 2];
+            BytesToHex(h, result, 0, h.Length);
+
+            return result;
+        }
+
+        static byte[] GenerateKFromPBKDF2(string password, string random64code, int server_iteration)
+        {
+            var chars = Encoding.UTF8.GetBytes(password);
+            var random32code = HexStringToBytes(random64code);
+
+            using (var pbkdf2 = new Rfc2898DeriveBytes(chars, random32code, server_iteration)) 
             {
-                var salt1 = new byte[salt.Length + 4];
-                byte[] hi, u1;
-
-                Buffer.BlockCopy(salt, 0, salt1, 0, salt.Length);
-                salt1[salt1.Length - 1] = (byte)1;
-
-                hi = u1 = hmac.ComputeHash(salt1);
-
-                for (var i = 1; i < count; i++)
-                {
-                    var u2 = hmac.ComputeHash(u1);
-                    XOR(hi, u2);
-                    u1 = u2;
-                }
-
-                return hi;
+                return pbkdf2.GetBytes(32);
             }
         }
 
-        static byte[] XOR(byte[] buffer1, byte[] buffer2)
+        static byte[] HexStringToBytes(string hex)
         {
-            for (var i = 0; i < buffer1.Length; i++)
-                buffer1[i] ^= buffer2[i];
-            return buffer1;
+            var NumberChars = hex.Length;
+            var bytes = new byte[NumberChars / 2];
+            for (var i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
         }
 
-        static byte[] HMAC(byte[] data, string key)
-           => new HMACSHA256(data).ComputeHash(Encoding.UTF8.GetBytes(key));
-    }
+        static string BytesToHexString(byte[] data)
+        {
+            return BitConverter.ToString(data).Replace("-", "");
+        }
 
-    #endregion SASL
+        static void BytesToHex(byte[] bytes, byte[] hex, int offset, int length)
+        {
+            var lookup = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+            var pos = offset;
+
+            for (var i = 0; i < length; ++i)
+            {
+                var c = bytes[i] & 255;
+                var j = c >> 4;
+                hex[pos++] = (byte)lookup[j];
+                j = c & 15;
+                hex[pos++] = (byte)lookup[j];
+            }
+        }
+
+        static byte[] XOR_between_password(byte[] password1, byte[] password2, int length)
+        {
+            var temp = new byte[length];
+
+            for (var i = 0; i < length; ++i)
+            {
+                temp[i] = (byte)(password1[i] ^ password2[i]);
+            }
+
+            return temp;
+        }
+
+        static byte[] GetKeyFromHmac(byte[] key, byte[] data)
+        {
+            using (var hmacsha256 = new HMACSHA256(key)) 
+            {
+                return hmacsha256.ComputeHash(data);
+            }
+        }
+    }
 }

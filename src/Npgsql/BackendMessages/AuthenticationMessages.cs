@@ -21,10 +21,6 @@
 // TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endregion
 
-using System;
-using System.Collections.Generic;
-using Npgsql.Logging;
-
 namespace Npgsql.BackendMessages
 {
     abstract class AuthenticationRequestMessage : IBackendMessage
@@ -41,199 +37,37 @@ namespace Npgsql.BackendMessages
         AuthenticationOkMessage() { }
     }
 
-    class AuthenticationKerberosV5Message : AuthenticationRequestMessage
+    class AuthenticationPasswordMessage : AuthenticationRequestMessage
     {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationKerberosV5;
+        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationPassword;
 
-        internal static readonly AuthenticationKerberosV5Message Instance = new AuthenticationKerberosV5Message();
-        AuthenticationKerberosV5Message() { }
-    }
+        internal int StoredMethod { get; private set; }
 
-    class AuthenticationCleartextPasswordMessage  : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationCleartextPassword;
+        internal string Random64Code { get; private set; }
 
-        internal static readonly AuthenticationCleartextPasswordMessage Instance = new AuthenticationCleartextPasswordMessage();
-        AuthenticationCleartextPasswordMessage() { }
-    }
+        internal string Token { get; private set; }
 
-    class AuthenticationMD5PasswordMessage  : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationMD5Password;
+        internal int ServerIteration { get; private set; }
 
-        internal byte[] Salt { get; private set; }
-
-        internal static AuthenticationMD5PasswordMessage Load(ReadBuffer buf)
+        internal AuthenticationPasswordMessage(ReadBuffer buf)
         {
-            var salt = new byte[4];
-            buf.ReadBytes(salt, 0, 4);
-            return new AuthenticationMD5PasswordMessage(salt);
-        }
+            StoredMethod = buf.ReadInt32();
 
-        AuthenticationMD5PasswordMessage(byte[] salt)
-        {
-            Salt = salt;
-        }
-    }
-
-    class AuthenticationSCMCredentialMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationSCMCredential;
-
-        internal static readonly AuthenticationSCMCredentialMessage Instance = new AuthenticationSCMCredentialMessage();
-        AuthenticationSCMCredentialMessage() { }
-    }
-
-    class AuthenticationGSSMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationGSS;
-
-        internal static readonly AuthenticationGSSMessage Instance = new AuthenticationGSSMessage();
-        AuthenticationGSSMessage() { }
-    }
-
-    class AuthenticationGSSContinueMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationGSSContinue;
-
-        internal byte[] AuthenticationData { get; private set; }
-
-        internal static AuthenticationGSSContinueMessage Load(ReadBuffer buf, int len)
-        {
-            len -= 4;   // The AuthRequestType code
-            var authenticationData = new byte[len];
-            buf.ReadBytes(authenticationData, 0, len);
-            return new AuthenticationGSSContinueMessage(authenticationData);
-        }
-
-        AuthenticationGSSContinueMessage(byte[] authenticationData)
-        {
-            AuthenticationData = authenticationData;
-        }
-    }
-
-    class AuthenticationSSPIMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationSSPI;
-
-        internal static readonly AuthenticationSSPIMessage Instance = new AuthenticationSSPIMessage();
-        AuthenticationSSPIMessage() { }
-    }
-
-    #region SASL
-
-    class AuthenticationSASLMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationSASL;
-        internal List<string> Mechanisms { get; } = new List<string>();
-
-        internal AuthenticationSASLMessage(ReadBuffer buf)
-        {
-            while (buf.Buffer[buf.ReadPosition] != 0)
-                Mechanisms.Add(buf.ReadNullTerminatedString());
-            buf.ReadByte();
-            if (Mechanisms.Count == 0)
-                throw new NpgsqlException("Received AuthenticationSASL message with 0 mechanisms!");
-        }
-    }
-
-    class AuthenticationSASLContinueMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationSASLContinue;
-        internal byte[] Payload { get; }
-
-        internal AuthenticationSASLContinueMessage(ReadBuffer buf, int len)
-        {
-            Payload = new byte[len];
-            buf.ReadBytes(Payload, 0, len);
-        }
-    }
-
-    class AuthenticationSCRAMServerFirstMessage
-    {
-        static readonly NpgsqlLogger Log = NpgsqlLogManager.GetCurrentClassLogger();
-
-        internal string Nonce { get; }
-        internal string Salt { get; }
-        internal int Iteration { get; } = -1;
-
-        internal AuthenticationSCRAMServerFirstMessage(byte[] bytes)
-        {
-            var data = PGUtil.UTF8Encoding.GetString(bytes);
-
-            foreach (var part in data.Split(','))
+            if (StoredMethod != 2)
             {
-                if (part.StartsWith("r="))
-                    Nonce = part.Substring(2);
-                else if (part.StartsWith("s="))
-                    Salt = part.Substring(2);
-                else if (part.StartsWith("i="))
-                    Iteration = int.Parse(part.Substring(2));
-                else
-                    Log.Debug("Unknown part in SCRAM server-first message:" + part);
+                throw new NpgsqlException("The  password-stored method is not supported , must sha256.");
             }
 
-            if (Nonce == null)
-                throw new NpgsqlException("Server nonce not received in SCRAM server-first message");
-            if (Salt == null)
-                throw new NpgsqlException("Server salt not received in SCRAM server-first message");
-            if (Iteration == -1)
-                throw new NpgsqlException("Server iterations not received in SCRAM server-first message");
+            Random64Code = buf.ReadString(64);
+            Token = buf.ReadString(8);
+            ServerIteration = buf.ReadInt32();
         }
     }
-
-    class AuthenticationSASLFinalMessage : AuthenticationRequestMessage
-    {
-        internal override AuthenticationRequestType AuthRequestType => AuthenticationRequestType.AuthenticationSASLFinal;
-        internal byte[] Payload { get; }
-
-        internal AuthenticationSASLFinalMessage(ReadBuffer buf, int len)
-        {
-            Payload = new byte[len];
-            buf.ReadBytes(Payload, 0, len);
-        }
-    }
-
-    class AuthenticationSCRAMServerFinalMessage
-    {
-        static readonly NpgsqlLogger Log = NpgsqlLogManager.GetCurrentClassLogger();
-
-        internal string ServerSignature { get; }
-
-        internal AuthenticationSCRAMServerFinalMessage(byte[] bytes)
-        {
-            var data = PGUtil.UTF8Encoding.GetString(bytes);
-
-            foreach (var part in data.Split(','))
-            {
-                if (part.StartsWith("v="))
-                    ServerSignature = part.Substring(2);
-                else
-                    Log.Debug("Unknown part in SCRAM server-first message:" + part);
-            }
-
-            if (ServerSignature == null)
-                throw new NpgsqlException("Server signature not received in SCRAM server-final message");
-        }
-    }
-
-    #endregion SASL
 
     // TODO: Remove Authentication prefix from everything
     enum AuthenticationRequestType
     {
         AuthenticationOk = 0,
-        AuthenticationKerberosV4 = 1,
-        AuthenticationKerberosV5 = 2,
-        AuthenticationCleartextPassword = 3,
-        AuthenticationCryptPassword = 4,
-        AuthenticationMD5Password = 5,
-        AuthenticationSCMCredential = 6,
-        AuthenticationGSS = 7,
-        AuthenticationGSSContinue = 8,
-        AuthenticationSSPI = 9,
-        AuthenticationSASL = 10,
-        AuthenticationSASLContinue = 11,
-        AuthenticationSASLFinal = 12
+        AuthenticationPassword = 10,
     }
 }
