@@ -36,8 +36,9 @@ namespace Npgsql
             if (password == null)
                 throw new NpgsqlException("No password has been provided but the backend requires one (in cleartext)");
 
-            var passwordResponseMessage = new PasswordResponseMessage(password, random64Code, token, serverIteration);
-            await passwordResponseMessage.Write(WriteBuffer, async, cancellationToken);
+            await new PasswordResponseMessage(password, random64Code, token, serverIteration)
+                .Write(WriteBuffer, async, cancellationToken);
+            await WriteBuffer.Flush(async, cancellationToken);
 
             var okMsg = await ReadExpecting<AuthenticationRequestMessage>(async);
             if (okMsg.AuthRequestType != AuthenticationRequestType.AuthenticationOk)
