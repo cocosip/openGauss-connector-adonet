@@ -250,52 +250,57 @@ ORDER BY ord";
             var typeChar = reader.GetString(5)[0];
             switch (typeChar)
             {
-            case 'b':  // Normal base type
-                (
-                    HandlerTypes.TryGetValue(name, out var typeAndMapping)
-                        ? new PostgresBaseType(ns, name, oid, typeAndMapping.HandlerType, typeAndMapping.Mapping)
-                        : new PostgresBaseType(ns, name, oid)  // Unsupported by Npgsql
-                ).AddTo(types);
-                return;
-            case 'a':   // Array
-                elementOID = Convert.ToUInt32(reader[6]);
-                Debug.Assert(elementOID > 0);
-                if (!types.ByOID.TryGetValue(elementOID, out var elementPostgresType))
-                {
-                    Log.Trace($"Array type '{name}' refers to unknown element with OID {elementOID}, skipping", connector.Id);
+                case 'b':  // Normal base type
+                    (
+                        HandlerTypes.TryGetValue(name, out var typeAndMapping)
+                            ? new PostgresBaseType(ns, name, oid, typeAndMapping.HandlerType, typeAndMapping.Mapping)
+                            : new PostgresBaseType(ns, name, oid)  // Unsupported by Npgsql
+                    ).AddTo(types);
                     return;
-                }
-                new PostgresArrayType(ns, name, oid, elementPostgresType).AddTo(types);
-                return;
-            case 'r':   // Range
-                elementOID = Convert.ToUInt32(reader[6]);
-                Debug.Assert(elementOID > 0);
-                if (!types.ByOID.TryGetValue(elementOID, out elementPostgresType))
-                {
-                    Log.Trace($"Range type '{name}' refers to unknown subtype with OID {elementOID}, skipping", connector.Id);
+                case 'a':   // Array
+                    elementOID = Convert.ToUInt32(reader[6]);
+                    //TODO: _byteawithoutorderwithequalcol,_byteawithoutordercol
+                    //Debug.Assert(elementOID > 0);
+                    if (elementOID < 1)
+                    {
+                        return;
+                    }
+                    if (!types.ByOID.TryGetValue(elementOID, out var elementPostgresType))
+                    {
+                        Log.Trace($"Array type '{name}' refers to unknown element with OID {elementOID}, skipping", connector.Id);
+                        return;
+                    }
+                    new PostgresArrayType(ns, name, oid, elementPostgresType).AddTo(types);
                     return;
-                }
-                new PostgresRangeType(ns, name, oid, elementPostgresType).AddTo(types);
-                return;
-            case 'e':   // Enum
-                new PostgresEnumType(ns, name, oid).AddTo(types);
-                return;
-            case 'd':   // Domain
-                var baseTypeOID = Convert.ToUInt32(reader[4]);
-                Debug.Assert(baseTypeOID > 0);
-                PostgresType basePostgresType;
-                if (!types.ByOID.TryGetValue(baseTypeOID, out basePostgresType))
-                {
-                    Log.Trace($"Domain type '{name}' refers to unknown base type with OID {baseTypeOID}, skipping", connector.Id);
+                case 'r':   // Range
+                    elementOID = Convert.ToUInt32(reader[6]);
+                    Debug.Assert(elementOID > 0);
+                    if (!types.ByOID.TryGetValue(elementOID, out elementPostgresType))
+                    {
+                        Log.Trace($"Range type '{name}' refers to unknown subtype with OID {elementOID}, skipping", connector.Id);
+                        return;
+                    }
+                    new PostgresRangeType(ns, name, oid, elementPostgresType).AddTo(types);
                     return;
-                }
-                new PostgresDomainType(ns, name, oid, basePostgresType).AddTo(types);
-                return;
-            case 'p':   // pseudo-type (record, void)
-                // Hack this as a base type
-                goto case 'b';
-            default:
-                throw new ArgumentOutOfRangeException($"Unknown typtype for type '{name}' in pg_type: {typeChar}");
+                case 'e':   // Enum
+                    new PostgresEnumType(ns, name, oid).AddTo(types);
+                    return;
+                case 'd':   // Domain
+                    var baseTypeOID = Convert.ToUInt32(reader[4]);
+                    Debug.Assert(baseTypeOID > 0);
+                    PostgresType basePostgresType;
+                    if (!types.ByOID.TryGetValue(baseTypeOID, out basePostgresType))
+                    {
+                        Log.Trace($"Domain type '{name}' refers to unknown base type with OID {baseTypeOID}, skipping", connector.Id);
+                        return;
+                    }
+                    new PostgresDomainType(ns, name, oid, basePostgresType).AddTo(types);
+                    return;
+                case 'p':   // pseudo-type (record, void)
+                            // Hack this as a base type
+                    goto case 'b';
+                default:
+                    throw new ArgumentOutOfRangeException($"Unknown typtype for type '{name}' in pg_type: {typeChar}");
             }
         }
 
@@ -475,7 +480,8 @@ WHERE a.typtype = 'b' AND b.typname = @name{(withSchema ? " AND ns.nspname = @sc
                         var arrayOID = reader.GetFieldValue<uint>(2);
 
                         new PostgresArrayType(arrayNs, arrayName, arrayOID, compositeType).AddTo(PostgresTypes);
-                    } else
+                    }
+                    else
                         Log.Warn($"Could not find array type corresponding to composite {pgName}");
 
                     return compositeType;
@@ -572,12 +578,13 @@ WHERE a.typtype = 'b' AND b.typname = @name{(withSchema ? " AND ns.nspname = @sc
 
                 if (value is DateTime)
                 {
-                    return ((DateTime) value).Kind == DateTimeKind.Utc
+                    return ((DateTime)value).Kind == DateTimeKind.Utc
                         ? this[NpgsqlDbType.TimestampTZ]
                         : this[NpgsqlDbType.Timestamp];
                 }
 
-                if (value is NpgsqlDateTime) {
+                if (value is NpgsqlDateTime)
+                {
                     return ((NpgsqlDateTime)value).Kind == DateTimeKind.Utc
                         ? this[NpgsqlDbType.TimestampTZ]
                         : this[NpgsqlDbType.Timestamp];
