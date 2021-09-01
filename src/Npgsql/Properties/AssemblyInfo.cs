@@ -7,6 +7,8 @@ using System.Security;
 [assembly: AllowPartiallyTrustedCallers]
 [assembly: AssemblyTrademark("")]
 
+[assembly: InternalsVisibleTo("Npgsql.Tests")]
+
 #if !NETSTANDARD1_3
 [assembly: SecurityRules(SecurityRuleSet.Level1)]
 #endif

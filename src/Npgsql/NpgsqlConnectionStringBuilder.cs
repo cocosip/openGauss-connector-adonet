@@ -639,15 +639,16 @@ namespace Npgsql
         [Description("Whether connection pooling should be used.")]
         [DisplayName("Pooling")]
         [NpgsqlConnectionStringProperty]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool Pooling
         {
-            get => _pooling;
-            set
-            {
-                _pooling = value;
-                SetValue(nameof(Pooling), value);
-            }
+            get => false;
+            //TODO: 因为OPENGAUSS没有DISCARD，所以连接池中链接不知如何重置服务端链接状态，所以先不启用连接池
+            //set
+            //{
+            //    _pooling = value;
+            //    SetValue(nameof(Pooling), value);
+            //}
         }
         bool _pooling;
 
