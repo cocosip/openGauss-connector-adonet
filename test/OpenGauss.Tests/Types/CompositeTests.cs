@@ -354,6 +354,45 @@ namespace OpenGauss.Tests.Types
             }
         }
 
+        [Test]
+        public void TableOfType()
+        {
+            var csb = new OpenGaussConnectionStringBuilder(ConnectionString)
+            {
+                ApplicationName = nameof(Array),
+                Pooling = false
+            };
+            using var conn = OpenConnection(csb);
+            conn.ExecuteNonQuery("CREATE TYPE pg_temp.composite6 AS (x int, some_text text)");
+            conn.ExecuteNonQuery("CREATE TYPE pg_temp.composite6_tab IS TABLE OF composite6 ");
+            conn.ReloadTypes();
+            conn.TypeMapper.MapComposite<SomeComposite>("composite6");
+
+            var expected = new[] {
+                new SomeComposite {X = 8, SomeText = "foo"},
+                new SomeComposite {X = 9, SomeText = "bar"}
+            };
+
+            using var cmd = new OpenGaussCommand("SELECT @p1::composite6[], @p2::composite6[]", conn);
+            cmd.Parameters.Add(new OpenGaussParameter
+            {
+                ParameterName = "p1",
+                DataTypeName = "composite6_tab",
+                Value = expected
+            });
+            cmd.Parameters.AddWithValue("p2", expected); // Infer
+            using var reader = cmd.ExecuteReader();
+            reader.Read();
+            for (var i = 0; i < cmd.Parameters.Count; i++)
+            {
+                var actual = reader.GetFieldValue<SomeComposite[]>(i);
+                Assert.That(actual[0].X, Is.EqualTo(expected[0].X));
+                Assert.That(actual[0].SomeText, Is.EqualTo(expected[0].SomeText));
+                Assert.That(actual[1].X, Is.EqualTo(expected[1].X));
+                Assert.That(actual[1].SomeText, Is.EqualTo(expected[1].SomeText));
+            }
+        }
+
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/859")]
         public void Name_translation()
         {

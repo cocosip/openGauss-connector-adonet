@@ -204,6 +204,14 @@ namespace OpenGauss.NET.TypeMapping
                         elementHandler.CreateArrayHandler(pgArrayType, Connector.Settings.ArrayNullabilityMode);
                 }
 
+                case PostgresTableOfType pgTableOfType:
+                {
+                    var pgArrayType = (PostgresArrayType) pgTableOfType.Element;
+                    var elementHandler = ResolveByOID(pgArrayType.Element.OID);
+                    return _handlersByDataTypeName[typeName] =
+                    elementHandler.CreateArrayHandler(pgArrayType, Connector.Settings.ArrayNullabilityMode);
+                }
+
                 case PostgresRangeType pgRangeType:
                 {
                     var subtypeHandler = ResolveByOID(pgRangeType.Subtype.OID);

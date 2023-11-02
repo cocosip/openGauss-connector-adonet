@@ -121,6 +121,7 @@ namespace OpenGauss.NET.Internal
 
         readonly List<PostgresBaseType>       _baseTypesMutable       = new();
         readonly List<PostgresArrayType>      _arrayTypesMutable      = new();
+        readonly List<PostgresTableOfType>    _tableOfTypesMutable      = new();
         readonly List<PostgresRangeType>      _rangeTypesMutable      = new();
         readonly List<PostgresMultirangeType> _multirangeTypesMutable = new();
         readonly List<PostgresEnumType>       _enumTypesMutable       = new();
@@ -129,6 +130,7 @@ namespace OpenGauss.NET.Internal
 
         internal IReadOnlyList<PostgresBaseType>       BaseTypes       => _baseTypesMutable;
         internal IReadOnlyList<PostgresArrayType>      ArrayTypes      => _arrayTypesMutable;
+        internal IReadOnlyList<PostgresTableOfType>    TableOfTypes    => _tableOfTypesMutable;
         internal IReadOnlyList<PostgresRangeType>      RangeTypes      => _rangeTypesMutable;
         internal IReadOnlyList<PostgresMultirangeType> MultirangeTypes => _multirangeTypesMutable;
         internal IReadOnlyList<PostgresEnumType>       EnumTypes       => _enumTypesMutable;
@@ -234,6 +236,9 @@ namespace OpenGauss.NET.Internal
                     continue;
                 case PostgresArrayType arrayType:
                     _arrayTypesMutable.Add(arrayType);
+                    continue;
+                case PostgresTableOfType tableOfType:
+                    _tableOfTypesMutable.Add(tableOfType);
                     continue;
                 case PostgresRangeType rangeType:
                     _rangeTypesMutable.Add(rangeType);

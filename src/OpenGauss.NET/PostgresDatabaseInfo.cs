@@ -125,7 +125,11 @@ FROM (
         CASE WHEN elemproc.proname='array_recv' THEN 'a' ELSE elemtyp.typtype END AS elemtyptype
     FROM (
         SELECT typ.oid, typnamespace, typname, typrelid, typnotnull, relkind, typelem AS elemoid,
-            CASE WHEN proc.proname='array_recv' THEN 'a' ELSE typ.typtype END AS typtype,
+            CASE
+	            WHEN typ.typtype in ('o') THEN typ.typtype
+            	WHEN proc.proname='array_recv' THEN 'a'
+            	ELSE typ.typtype
+            END AS typtype,
             CASE
                 WHEN proc.proname='array_recv' THEN typ.typelem
                 {(withRange ? "WHEN typ.typtype='r' THEN rngsubtype" : "")}
@@ -143,7 +147,7 @@ FROM (
 ) AS t
 JOIN pg_namespace AS ns ON (ns.oid = typnamespace)
 WHERE
-    typtype IN ('b', 'r', 'm', 'e', 'd') OR -- Base, range, multirange, enum, domain
+    typtype IN ('b', 'r', 'm', 'e', 'd', 'o') OR -- Base, range, multirange, enum, domain, table of table
     (typtype = 'c' AND {(loadTableComposites ? "ns.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')" : "relkind='c'")}) OR -- User-defined free-standing composites (not table composites) by default
     (typtype = 'p' AND typname IN ('record', 'void')) OR -- Some special supported pseudo-types
     (typtype = 'a' AND (  -- Array of...
@@ -159,6 +163,7 @@ ORDER BY CASE
        WHEN typtype = 'd' AND elemtyptype <> 'a' THEN 4 -- Domains over non-arrays after
        WHEN typtype = 'a' THEN 5                        -- Arrays after
        WHEN typtype = 'd' AND elemtyptype = 'a' THEN 6  -- Domains over arrays last
+       WHEN typtype = 'o' AND elemtyptype = 'a' THEN 7  -- table of type
 END;";
 
         static string GenerateLoadCompositeTypesQuery(bool loadTableComposites)
@@ -242,7 +247,6 @@ ORDER BY oid{(withEnumSortOrder ? ", enumsortorder" : "")};";
                 var typnotnull = ReadNonNullableString(buf)[0] == 't';
                 var len = buf.ReadInt32();
                 var elemtypoid = len == -1 ? 0 : uint.Parse(buf.ReadString(len), NumberFormatInfo.InvariantInfo);
-
                 switch (typtype)
                 {
                 case 'b': // Normal base type
@@ -264,6 +268,19 @@ ORDER BY oid{(withEnumSortOrder ? ", enumsortorder" : "")};";
                     continue;
                 }
 
+                case 'o': // table of type
+                {
+                    Debug.Assert(elemtypoid > 0);
+                    if (!byOID.TryGetValue(elemtypoid, out var elementPostgresType))
+                    {
+                        Log.Trace($"Table type '{typname}' refers to unknown element with OID {elemtypoid}, skipping", conn.Id);
+                        continue;
+                    }
+
+                    var arrayType = new PostgresTableOfType(nspname, typname, oid, elementPostgresType);
+                    byOID[arrayType.OID] = arrayType;
+                    continue;
+                }
                 case 'r': // Range
                 {
                     Debug.Assert(elemtypoid > 0);
