@@ -15,7 +15,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<NoWarn>$(NoWarn);NU5105</NoWarn>
+		<NoWarn>$(NoWarn);NU5105;NU1903</NoWarn>
 		<AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)OpenGauss.snk</AssemblyOriginatorKeyFile>
 		<SignAssembly>true</SignAssembly>
 	</PropertyGroup>
