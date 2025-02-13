@@ -11,118 +11,113 @@ using Scriban;
 namespace OpenGauss.SourceGenerators
 {
     [Generator]
-    class TypeHandlerSourceGenerator : ISourceGenerator
+    public class TypeHandlerSourceGenerator : IIncrementalGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
-            => context.RegisterForSyntaxNotifications(() => new MySyntaxReceiver());
-
-        public void Execute(GeneratorExecutionContext context)
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var compilation = context.Compilation;
+            // 注册语法接收器
+            var syntaxProvider = context.SyntaxProvider.CreateSyntaxProvider(
+                predicate: static (node, _) => node is ClassDeclarationSyntax cds &&
+                                                cds.BaseList is not null &&
+                                                cds.Modifiers.Any(SyntaxKind.PartialKeyword),
+                transform: static (ctx, _) => (ClassDeclarationSyntax)ctx.Node);
 
-            var (simpleTypeHandlerInterfaceSymbol, typeHandlerInterfaceSymbol) = (
-                compilation.GetTypeByMetadataName("OpenGauss.NET.Internal.TypeHandling.IOpenGaussSimpleTypeHandler`1"),
-                compilation.GetTypeByMetadataName("OpenGauss.NET.Internal.TypeHandling.IOpenGaussTypeHandler`1"));
+            // 组合语法和编译信息
+            var compilationAndClasses = context.CompilationProvider.Combine(syntaxProvider.Collect());
 
-            if (simpleTypeHandlerInterfaceSymbol is null || typeHandlerInterfaceSymbol is null)
-                throw new Exception("Could not find IOpenGaussSimpleTypeHandler or IOpenGaussTypeHandler");
-
-            var template = Template.Parse(EmbeddedResource.GetContent("TypeHandler.snbtxt"), "TypeHandler.snbtxt");
-
-            foreach (var cds in ((MySyntaxReceiver)context.SyntaxReceiver!).TypeHandlerCandidates)
+            // 注册生成逻辑
+            context.RegisterSourceOutput(compilationAndClasses, (spc, source) =>
             {
-                var semanticModel = compilation.GetSemanticModel(cds.SyntaxTree);
-                if (semanticModel.GetDeclaredSymbol(cds) is not INamedTypeSymbol typeSymbol)
-                    continue;
+                var (compilation, classes) = source;
 
-                if (typeSymbol.AllInterfaces.Any(i =>
-                    i.OriginalDefinition.Equals(simpleTypeHandlerInterfaceSymbol, SymbolEqualityComparer.Default)))
+                var (simpleTypeHandlerInterfaceSymbol, typeHandlerInterfaceSymbol) = (
+                    compilation.GetTypeByMetadataName("OpenGauss.NET.Internal.TypeHandling.IOpenGaussSimpleTypeHandler`1"),
+                    compilation.GetTypeByMetadataName("OpenGauss.NET.Internal.TypeHandling.IOpenGaussTypeHandler`1"));
+
+                if (simpleTypeHandlerInterfaceSymbol is null || typeHandlerInterfaceSymbol is null)
+                    throw new Exception("Could not find IOpenGaussSimpleTypeHandler or IOpenGaussTypeHandler");
+
+                var template = Template.Parse(EmbeddedResource.GetContent("TypeHandler.snbtxt"), "TypeHandler.snbtxt");
+
+                foreach (var cds in classes)
                 {
-                    AugmentTypeHandler(template, typeSymbol, cds, isSimple: true);
-                    continue;
-                }
+                    var semanticModel = compilation.GetSemanticModel(cds.SyntaxTree);
+                    if (semanticModel.GetDeclaredSymbol(cds) is not INamedTypeSymbol typeSymbol)
+                        continue;
 
-                if (typeSymbol.AllInterfaces.Any(i =>
-                    i.OriginalDefinition.Equals(typeHandlerInterfaceSymbol, SymbolEqualityComparer.Default)))
-                {
-                    AugmentTypeHandler(template, typeSymbol, cds, isSimple: false);
-                }
-            }
-
-            void AugmentTypeHandler(
-                Template template,
-                INamedTypeSymbol typeSymbol,
-                ClassDeclarationSyntax classDeclarationSyntax,
-                bool isSimple)
-            {
-                var usings = new HashSet<string>(
-                    new[]
+                    if (typeSymbol.AllInterfaces.Any(i =>
+                        i.OriginalDefinition.Equals(simpleTypeHandlerInterfaceSymbol, SymbolEqualityComparer.Default)))
                     {
+                        AugmentTypeHandler(template, typeSymbol, cds, isSimple: true);
+                        continue;
+                    }
+
+                    if (typeSymbol.AllInterfaces.Any(i =>
+                        i.OriginalDefinition.Equals(typeHandlerInterfaceSymbol, SymbolEqualityComparer.Default)))
+                    {
+                        AugmentTypeHandler(template, typeSymbol, cds, isSimple: false);
+                    }
+                }
+
+                void AugmentTypeHandler(
+                    Template template,
+                    INamedTypeSymbol typeSymbol,
+                    ClassDeclarationSyntax classDeclarationSyntax,
+                    bool isSimple)
+                {
+                    var usings = new HashSet<string>(
+                        new[]
+                        {
                         "System",
                         "System.Threading",
                         "System.Threading.Tasks",
                         "OpenGauss.NET.Internal"
-                    }.Concat(classDeclarationSyntax.SyntaxTree.GetCompilationUnitRoot().Usings
-                        .Where(u => u.Alias is null && u.StaticKeyword.IsKind(SyntaxKind.None))
-                        .Select(u => u.Name.ToString())));
+                        }.Concat(classDeclarationSyntax.SyntaxTree.GetCompilationUnitRoot().Usings
+                            .Where(u => u.Alias is null && u.StaticKeyword.IsKind(SyntaxKind.None))
+                            .Select(u => u.Name?.ToString() ?? "")));
 
-                var interfaces = typeSymbol.AllInterfaces
-                    .Where(i => i.OriginalDefinition.Equals(isSimple ? simpleTypeHandlerInterfaceSymbol : typeHandlerInterfaceSymbol,
-                                    SymbolEqualityComparer.Default) &&
-                                !i.TypeArguments[0].IsAbstract);
+                    var interfaces = typeSymbol.AllInterfaces
+                        .Where(i => i.OriginalDefinition.Equals(isSimple ? simpleTypeHandlerInterfaceSymbol : typeHandlerInterfaceSymbol,
+                                        SymbolEqualityComparer.Default) &&
+                                    !i.TypeArguments[0].IsAbstract);
 
-                var output = template.Render(new
-                {
-                    Usings = usings,
-                    TypeName = FormatTypeName(typeSymbol),
-                    Namespace = typeSymbol.ContainingNamespace.ToDisplayString(),
-                    IsSimple = isSimple,
-                    Interfaces = interfaces.Select(i => new
+                    var output = template.Render(new
                     {
-                        Name = FormatTypeName(i),
-                        HandledType = FormatTypeName(i.TypeArguments[0]),
-                    })
-                });
+                        Usings = usings,
+                        TypeName = FormatTypeName(typeSymbol),
+                        Namespace = typeSymbol.ContainingNamespace.ToDisplayString(),
+                        IsSimple = isSimple,
+                        Interfaces = interfaces.Select(i => new
+                        {
+                            Name = FormatTypeName(i),
+                            HandledType = FormatTypeName(i.TypeArguments[0]),
+                        })
+                    });
 
-                context.AddSource(typeSymbol.Name + ".Generated.cs", SourceText.From(output, Encoding.UTF8));
-            }
-
-            static string FormatTypeName(ITypeSymbol typeSymbol)
-            {
-                if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-                {
-                    return namedTypeSymbol.IsGenericType
-                        ? new StringBuilder(namedTypeSymbol.Name)
-                            .Append('<')
-                            .Append(string.Join(",", namedTypeSymbol.TypeArguments.Select(FormatTypeName)))
-                            .Append('>')
-                            .ToString()
-                        : namedTypeSymbol.Name;
+                    spc.AddSource(typeSymbol.Name + ".Generated.cs", SourceText.From(output, Encoding.UTF8));
                 }
 
-                if (typeSymbol.TypeKind == TypeKind.Array)
+                static string FormatTypeName(ITypeSymbol typeSymbol)
                 {
-                    return $"{FormatTypeName(((IArrayTypeSymbol)typeSymbol).ElementType)}[]";
-                    // return "int";
+                    if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+                    {
+                        return namedTypeSymbol.IsGenericType
+                            ? new StringBuilder(namedTypeSymbol.Name)
+                                .Append('<')
+                                .Append(string.Join(",", namedTypeSymbol.TypeArguments.Select(FormatTypeName)))
+                                .Append('>')
+                                .ToString()
+                            : namedTypeSymbol.Name;
+                    }
+
+                    if (typeSymbol.TypeKind == TypeKind.Array)
+                    {
+                        return $"{FormatTypeName(((IArrayTypeSymbol)typeSymbol).ElementType)}[]";
+                    }
+
+                    return typeSymbol.ToString();
                 }
-
-                return typeSymbol.ToString();
-            }
-        }
-
-        class MySyntaxReceiver : ISyntaxReceiver
-        {
-            public List<ClassDeclarationSyntax> TypeHandlerCandidates { get; } = new();
-
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is ClassDeclarationSyntax cds &&
-                    cds.BaseList is not null &&
-                    cds.Modifiers.Any(SyntaxKind.PartialKeyword))
-                {
-                    TypeHandlerCandidates.Add(cds);
-                }
-            }
+            });
         }
     }
 }
