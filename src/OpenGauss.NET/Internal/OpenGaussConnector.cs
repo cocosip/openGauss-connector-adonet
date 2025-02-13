@@ -289,16 +289,16 @@ namespace OpenGauss.NET.Internal
         int _resetWithoutDeallocateResponseCount;
 
         // Backend
-        readonly CommandCompleteMessage      _commandCompleteMessage      = new();
-        readonly ReadyForQueryMessage        _readyForQueryMessage        = new();
+        readonly CommandCompleteMessage _commandCompleteMessage = new();
+        readonly ReadyForQueryMessage _readyForQueryMessage = new();
         readonly ParameterDescriptionMessage _parameterDescriptionMessage = new();
-        readonly DataRowMessage              _dataRowMessage              = new();
-        readonly RowDescriptionMessage       _rowDescriptionMessage       = new();
+        readonly DataRowMessage _dataRowMessage = new();
+        readonly RowDescriptionMessage _rowDescriptionMessage = new();
 
         // Since COPY is rarely used, allocate these lazily
-        CopyInResponseMessage?  _copyInResponseMessage;
+        CopyInResponseMessage? _copyInResponseMessage;
         CopyOutResponseMessage? _copyOutResponseMessage;
-        CopyDataMessage?        _copyDataMessage;
+        CopyDataMessage? _copyDataMessage;
         CopyBothResponseMessage? _copyBothResponseMessage;
 
         #endregion
@@ -431,16 +431,16 @@ namespace OpenGauss.NET.Internal
         bool IsConnected
             => State switch
             {
-                ConnectorState.Ready       => true,
-                ConnectorState.Executing   => true,
-                ConnectorState.Fetching    => true,
-                ConnectorState.Waiting     => true,
-                ConnectorState.Copy        => true,
+                ConnectorState.Ready => true,
+                ConnectorState.Executing => true,
+                ConnectorState.Fetching => true,
+                ConnectorState.Waiting => true,
+                ConnectorState.Copy => true,
                 ConnectorState.Replication => true,
-                ConnectorState.Closed      => false,
-                ConnectorState.Connecting  => false,
-                ConnectorState.Broken      => false,
-                _                          => throw new ArgumentOutOfRangeException("Unknown state: " + State)
+                ConnectorState.Closed => false,
+                ConnectorState.Connecting => false,
+                ConnectorState.Broken => false,
+                _ => throw new ArgumentOutOfRangeException("Unknown state: " + State)
             };
 
         internal bool IsReady => State == ConnectorState.Ready;
@@ -635,7 +635,7 @@ namespace OpenGauss.NET.Internal
                     reader.NextResult();
                     reader.Read();
                 }
-                
+
                 _isTransactionReadOnly = reader.GetString(0) != "off";
 
                 var clusterState = UpdateClusterState(ignoreDatabaseVersion: false);
@@ -771,7 +771,7 @@ namespace OpenGauss.NET.Internal
 
                             if (Path.GetExtension(certPath).ToUpperInvariant() != ".PFX")
                             {
-#if NET5_0_OR_GREATER
+#if NET6_0 || NET8_0
                                 // It's PEM time
                                 var keyPath = Settings.SslKey ?? PostgresEnvironment.SslKey ?? PostgresEnvironment.SslKeyDefault;
                                 cert = string.IsNullOrEmpty(password)
@@ -784,12 +784,35 @@ namespace OpenGauss.NET.Internal
                                     using var previousCert = cert;
                                     cert = new X509Certificate2(cert.Export(X509ContentType.Pkcs12));
                                 }
+
+#elif NET9_0
+
+                                // It's PEM time
+                                var keyPath = Settings.SslKey ?? PostgresEnvironment.SslKey ?? PostgresEnvironment.SslKeyDefault;
+                                cert = string.IsNullOrEmpty(password)
+                                    ? X509Certificate2.CreateFromPemFile(certPath, keyPath)
+                                    : X509Certificate2.CreateFromEncryptedPemFile(certPath, password, keyPath);
+                                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                                {
+                                    // Windows crypto API has a bug with pem certs
+                                    // See #3650
+                                    using var previousCert = cert;
+                                    cert = X509CertificateLoader.LoadCertificate(cert.Export(X509ContentType.Pkcs12));
+                                }
+
 #else
                                 throw new NotSupportedException("PEM certificates are only supported with .NET 5 and higher");
 #endif
                             }
+
                             if (cert is null)
+                            {
+#if NET9_0_OR_GREATER
+                                cert ??= X509CertificateLoader.LoadPkcs12FromFile(certPath, password);
+#else
                                 cert = new X509Certificate2(certPath, password);
+#endif
+                            }
                             clientCertificates.Add(cert);
                         }
 
@@ -918,7 +941,7 @@ namespace OpenGauss.NET.Internal
                     var write = new List<Socket> { socket };
                     var error = new List<Socket> { socket };
                     Socket.Select(null, write, error, perEndpointTimeout);
-                    var errorCode = (int) socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Error)!;
+                    var errorCode = (int)socket.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Error)!;
                     if (errorCode != 0)
                         throw new SocketException(errorCode);
                     if (!write.Any())
@@ -1405,88 +1428,89 @@ namespace OpenGauss.NET.Internal
         {
             switch (code)
             {
-                case BackendMessageCode.RowDescription:
-                    return _rowDescriptionMessage.Load(buf, TypeMapper);
-                case BackendMessageCode.DataRow:
-                    return _dataRowMessage.Load(len);
-                case BackendMessageCode.CommandComplete:
-                    return _commandCompleteMessage.Load(buf, len);
-                case BackendMessageCode.ReadyForQuery:
-                    var rfq = _readyForQueryMessage.Load(buf);
-                    if (!isPrependedMessage) {
-                        // Transaction status on prepended messages shouldn't be processed, because there may be prepended messages
-                        // before the begin transaction message. In this case, they will contain transaction status Idle, which will
-                        // clear our Pending transaction status. Only process transaction status on RFQ's from user-provided, non
-                        // prepended messages.
-                        ProcessNewTransactionStatus(rfq.TransactionStatusIndicator);
-                    }
-                    return rfq;
-                case BackendMessageCode.EmptyQueryResponse:
-                    return EmptyQueryMessage.Instance;
-                case BackendMessageCode.ParseComplete:
-                    return ParseCompleteMessage.Instance;
-                case BackendMessageCode.ParameterDescription:
-                    return _parameterDescriptionMessage.Load(buf);
-                case BackendMessageCode.BindComplete:
-                    return BindCompleteMessage.Instance;
-                case BackendMessageCode.NoData:
-                    return NoDataMessage.Instance;
-                case BackendMessageCode.CloseComplete:
-                    return CloseCompletedMessage.Instance;
-                case BackendMessageCode.ParameterStatus:
-                    ReadParameterStatus(buf.GetNullTerminatedBytes(), buf.GetNullTerminatedBytes());
-                    return null;
-                case BackendMessageCode.NoticeResponse:
-                    var notice = PostgresNotice.Load(buf, Settings.IncludeErrorDetail);
-                    Log.Debug($"Received notice: {notice.MessageText}", Id);
-                    Connection?.OnNotice(notice);
-                    return null;
-                case BackendMessageCode.NotificationResponse:
-                    Connection?.OnNotification(new OpenGaussNotificationEventArgs(buf));
-                    return null;
+            case BackendMessageCode.RowDescription:
+                return _rowDescriptionMessage.Load(buf, TypeMapper);
+            case BackendMessageCode.DataRow:
+                return _dataRowMessage.Load(len);
+            case BackendMessageCode.CommandComplete:
+                return _commandCompleteMessage.Load(buf, len);
+            case BackendMessageCode.ReadyForQuery:
+                var rfq = _readyForQueryMessage.Load(buf);
+                if (!isPrependedMessage)
+                {
+                    // Transaction status on prepended messages shouldn't be processed, because there may be prepended messages
+                    // before the begin transaction message. In this case, they will contain transaction status Idle, which will
+                    // clear our Pending transaction status. Only process transaction status on RFQ's from user-provided, non
+                    // prepended messages.
+                    ProcessNewTransactionStatus(rfq.TransactionStatusIndicator);
+                }
+                return rfq;
+            case BackendMessageCode.EmptyQueryResponse:
+                return EmptyQueryMessage.Instance;
+            case BackendMessageCode.ParseComplete:
+                return ParseCompleteMessage.Instance;
+            case BackendMessageCode.ParameterDescription:
+                return _parameterDescriptionMessage.Load(buf);
+            case BackendMessageCode.BindComplete:
+                return BindCompleteMessage.Instance;
+            case BackendMessageCode.NoData:
+                return NoDataMessage.Instance;
+            case BackendMessageCode.CloseComplete:
+                return CloseCompletedMessage.Instance;
+            case BackendMessageCode.ParameterStatus:
+                ReadParameterStatus(buf.GetNullTerminatedBytes(), buf.GetNullTerminatedBytes());
+                return null;
+            case BackendMessageCode.NoticeResponse:
+                var notice = PostgresNotice.Load(buf, Settings.IncludeErrorDetail);
+                Log.Debug($"Received notice: {notice.MessageText}", Id);
+                Connection?.OnNotice(notice);
+                return null;
+            case BackendMessageCode.NotificationResponse:
+                Connection?.OnNotification(new OpenGaussNotificationEventArgs(buf));
+                return null;
 
-                case BackendMessageCode.AuthenticationRequest:
-                    var authType = (AuthenticationRequestType)buf.ReadInt32();
-                    return authType switch
-                    {
-                        AuthenticationRequestType.AuthenticationOk                => (AuthenticationRequestMessage)AuthenticationOkMessage.Instance,
-                        AuthenticationRequestType.AuthenticationCleartextPassword => AuthenticationCleartextPasswordMessage.Instance,
-                        AuthenticationRequestType.AuthenticationMD5Password       => AuthenticationMD5PasswordMessage.Load(buf),
-                        AuthenticationRequestType.AuthenticationGSS               => AuthenticationGSSMessage.Instance,
-                        AuthenticationRequestType.AuthenticationSSPI              => AuthenticationSSPIMessage.Instance,
-                        AuthenticationRequestType.AuthenticationGSSContinue       => AuthenticationGSSContinueMessage.Load(buf, len),
-                        AuthenticationRequestType.AuthenticationSASL              => AuthenticationSASLMessage.Load(buf),
-                        AuthenticationRequestType.AuthenticationSASLContinue      => new AuthenticationSASLContinueMessage(buf, len - 4),
-                        AuthenticationRequestType.AuthenticationSASLFinal         => new AuthenticationSASLFinalMessage(buf, len - 4),
-                        _ => throw new NotSupportedException($"Authentication method not supported (Received: {authType})")
-                    };
+            case BackendMessageCode.AuthenticationRequest:
+                var authType = (AuthenticationRequestType)buf.ReadInt32();
+                return authType switch
+                {
+                    AuthenticationRequestType.AuthenticationOk => (AuthenticationRequestMessage)AuthenticationOkMessage.Instance,
+                    AuthenticationRequestType.AuthenticationCleartextPassword => AuthenticationCleartextPasswordMessage.Instance,
+                    AuthenticationRequestType.AuthenticationMD5Password => AuthenticationMD5PasswordMessage.Load(buf),
+                    AuthenticationRequestType.AuthenticationGSS => AuthenticationGSSMessage.Instance,
+                    AuthenticationRequestType.AuthenticationSSPI => AuthenticationSSPIMessage.Instance,
+                    AuthenticationRequestType.AuthenticationGSSContinue => AuthenticationGSSContinueMessage.Load(buf, len),
+                    AuthenticationRequestType.AuthenticationSASL => AuthenticationSASLMessage.Load(buf),
+                    AuthenticationRequestType.AuthenticationSASLContinue => new AuthenticationSASLContinueMessage(buf, len - 4),
+                    AuthenticationRequestType.AuthenticationSASLFinal => new AuthenticationSASLFinalMessage(buf, len - 4),
+                    _ => throw new NotSupportedException($"Authentication method not supported (Received: {authType})")
+                };
 
-                case BackendMessageCode.BackendKeyData:
-                    return new BackendKeyDataMessage(buf);
+            case BackendMessageCode.BackendKeyData:
+                return new BackendKeyDataMessage(buf);
 
-                case BackendMessageCode.CopyInResponse:
-                    return (_copyInResponseMessage ??= new CopyInResponseMessage()).Load(ReadBuffer);
-                case BackendMessageCode.CopyOutResponse:
-                    return (_copyOutResponseMessage ??= new CopyOutResponseMessage()).Load(ReadBuffer);
-                case BackendMessageCode.CopyData:
-                    return (_copyDataMessage ??= new CopyDataMessage()).Load(len);
-                case BackendMessageCode.CopyBothResponse:
-                    return (_copyBothResponseMessage ??= new CopyBothResponseMessage()).Load(ReadBuffer);
+            case BackendMessageCode.CopyInResponse:
+                return (_copyInResponseMessage ??= new CopyInResponseMessage()).Load(ReadBuffer);
+            case BackendMessageCode.CopyOutResponse:
+                return (_copyOutResponseMessage ??= new CopyOutResponseMessage()).Load(ReadBuffer);
+            case BackendMessageCode.CopyData:
+                return (_copyDataMessage ??= new CopyDataMessage()).Load(len);
+            case BackendMessageCode.CopyBothResponse:
+                return (_copyBothResponseMessage ??= new CopyBothResponseMessage()).Load(ReadBuffer);
 
-                case BackendMessageCode.CopyDone:
-                    return CopyDoneMessage.Instance;
+            case BackendMessageCode.CopyDone:
+                return CopyDoneMessage.Instance;
 
-                case BackendMessageCode.PortalSuspended:
-                    throw new OpenGaussException("Unimplemented message: " + code);
-                case BackendMessageCode.ErrorResponse:
-                    return null;
+            case BackendMessageCode.PortalSuspended:
+                throw new OpenGaussException("Unimplemented message: " + code);
+            case BackendMessageCode.ErrorResponse:
+                return null;
 
-                case BackendMessageCode.FunctionCallResponse:
-                    // We don't use the obsolete function call protocol
-                    throw new OpenGaussException("Unexpected backend message: " + code);
+            case BackendMessageCode.FunctionCallResponse:
+                // We don't use the obsolete function call protocol
+                throw new OpenGaussException("Unexpected backend message: " + code);
 
-                default:
-                    throw new InvalidOperationException($"Internal OpenGauss bug: unexpected value {code} of enum {nameof(BackendMessageCode)}. Please file a bug.");
+            default:
+                throw new InvalidOperationException($"Internal OpenGauss bug: unexpected value {code} of enum {nameof(BackendMessageCode)}. Please file a bug.");
             }
         }
 
@@ -1522,9 +1546,9 @@ namespace OpenGauss.NET.Internal
         internal bool InTransaction
             => TransactionStatus switch
             {
-                TransactionStatus.Idle                     => false,
-                TransactionStatus.Pending                  => true,
-                TransactionStatus.InTransactionBlock       => true,
+                TransactionStatus.Idle => false,
+                TransactionStatus.Pending => true,
+                TransactionStatus.InTransactionBlock => true,
                 TransactionStatus.InFailedTransactionBlock => true,
                 _ => throw new InvalidOperationException($"Internal OpenGauss bug: unexpected value {TransactionStatus} of enum {nameof(TransactionStatus)}. Please file a bug.")
             };
@@ -1621,12 +1645,19 @@ namespace OpenGauss.NET.Internal
 
 #if NET5_0_OR_GREATER
                 if (Path.GetExtension(certRootPath).ToUpperInvariant() != ".PFX")
+                {
                     certs.ImportFromPemFile(certRootPath);
+                }
 #endif
 
                 if (certs.Count == 0)
+                {
+#if NET9_0_OR_GREATER
+                    certs.Add(X509CertificateLoader.LoadCertificateFromFile(certRootPath));
+#else
                     certs.Add(new X509Certificate2(certRootPath));
-
+#endif
+                }
 #if NET5_0_OR_GREATER
                 chain.ChainPolicy.CustomTrustStore.AddRange(certs);
                 chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
@@ -1965,7 +1996,7 @@ namespace OpenGauss.NET.Internal
                 return reason;
             }
         }
-        
+
         void FullCleanup()
         {
             Debug.Assert(Monitor.IsEntered(this));
@@ -2243,7 +2274,7 @@ namespace OpenGauss.NET.Internal
                     throw IsBroken
                         ? new OpenGaussException("The connection was previously broken because of the following exception", _breakReason)
                         : new OpenGaussException("The connection is closed");
-                }  
+                }
 
                 if (!_userLock!.Wait(0))
                 {

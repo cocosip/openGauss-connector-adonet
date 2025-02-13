@@ -292,9 +292,9 @@ namespace OpenGauss.NET.Internal
 #if NET
             var saltbytes = Convert.FromHexString(salt);
             var tokenbytes = Convert.FromHexString(token);
-// #elif NETSTANDARD2_1
-//             var saltbytes = Convert.FromHexString(salt);
-//             var tokenbytes = Convert.FromHexString(token);
+            // #elif NETSTANDARD2_1
+            //             var saltbytes = Convert.FromHexString(salt);
+            //             var tokenbytes = Convert.FromHexString(token);
 #else
             var saltbytes = HexStringToBytes(salt);
             var tokenbytes = HexStringToBytes(token);
@@ -323,10 +323,19 @@ namespace OpenGauss.NET.Internal
 
             static byte[] Hi(string password, byte[] salt, int iteration)
             {
+#if NET8_0_OR_GREATER
+
+                using (var di = new Rfc2898DeriveBytes(password, salt, iteration, HashAlgorithmName.SHA256))
+                {
+                    return di.GetBytes(32);
+                }
+
+#else
                 using (var di = new Rfc2898DeriveBytes(password, salt, iteration))
                 {
                     return di.GetBytes(32);
                 }
+#endif
             }
 
             static byte[] XOR_between_password(byte[] password1, byte[] password2, int length)

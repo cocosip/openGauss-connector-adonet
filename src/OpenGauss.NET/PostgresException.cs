@@ -27,7 +27,7 @@ namespace OpenGauss.NET
         /// Creates a new instance.
         /// </summary>
         public PostgresException(string messageText, string severity, string invariantSeverity, string sqlState)
-            : this(messageText, severity, invariantSeverity, sqlState, detail: null) {}
+            : this(messageText, severity, invariantSeverity, sqlState, detail: null) { }
 
         /// <summary>
         /// Creates a new instance.
@@ -104,11 +104,13 @@ namespace OpenGauss.NET
                 msg.Message, msg.Severity, msg.InvariantSeverity, msg.SqlState,
                 msg.Detail, msg.Hint, msg.Position, msg.InternalPosition, msg.InternalQuery,
                 msg.Where, msg.SchemaName, msg.TableName, msg.ColumnName, msg.DataTypeName,
-                msg.ConstraintName, msg.File, msg.Line, msg.Routine) {}
+                msg.ConstraintName, msg.File, msg.Line, msg.Routine)
+        { }
 
         internal static PostgresException Load(OpenGaussReadBuffer buf, bool includeDetail)
             => new(ErrorOrNoticeMessage.Load(buf, includeDetail));
 
+#if !NET8_0_OR_GREATER
         internal PostgresException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -161,7 +163,7 @@ namespace OpenGauss.NET
             info.AddValue(nameof(Line), Line);
             info.AddValue(nameof(Routine), Routine);
         }
-
+#endif
         /// <inheritdoc />
         public override string ToString()
         {
