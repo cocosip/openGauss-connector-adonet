@@ -1317,16 +1317,16 @@ $$;");
             using (var exporter = await conn.BeginBinaryExportAsync($"COPY {table} (value) TO STDIN (FORMAT binary)"))
             {
                 await exporter.StartRowAsync();
-                Assert.IsTrue(exporter.IsNull);
+                Assert.That(exporter.IsNull, Is.True);
                 await exporter.SkipAsync();
                 await exporter.StartRowAsync();
-                Assert.AreEqual(1, await exporter.ReadAsync<int?>());
+                Assert.That(await exporter.ReadAsync<int?>(), Is.EqualTo(1));
                 await exporter.StartRowAsync();
-                Assert.AreEqual(2, await exporter.ReadAsync<int?>());
+                Assert.That(await exporter.ReadAsync<int?>(), Is.EqualTo(2));
             }
         }
 
-        [Test, Timeout(5000)]
+        [Test, CancelAfter(5000)]
         [IssueLink("https://github.com/opengauss/opengauss/issues/3839")]
         public async Task SingleThreadedSynchronizationContext_deadlock()
         {
@@ -1347,7 +1347,7 @@ $$;");
             await Task.Yield();
         }
 
-        [Test, Timeout(10000)]
+        [Test, CancelAfter(10000)]
         [IssueLink("https://github.com/opengauss/opengauss/issues/3924")]
         public async Task Bug3924()
         {

@@ -950,7 +950,7 @@ CREATE PUBLICATION {publicationName} FOR TABLE {tableName};
 
         async Task<uint?> AssertTransactionStart(IAsyncEnumerator<PgOutputReplicationMessage> messages)
         {
-            Assert.True(await messages.MoveNextAsync());
+            Assert.That(await messages.MoveNextAsync(), Is.True);
 
             switch (messages.Current)
             {
@@ -967,13 +967,13 @@ CREATE PUBLICATION {publicationName} FOR TABLE {tableName};
 
         async Task AssertTransactionCommit(IAsyncEnumerator<PgOutputReplicationMessage> messages)
         {
-            Assert.True(await messages.MoveNextAsync());
+            Assert.That(await messages.MoveNextAsync(), Is.True);
 
             switch (messages.Current)
             {
             case StreamStopMessage:
                 Assert.That(IsStreaming);
-                Assert.True(await messages.MoveNextAsync());
+                Assert.That(await messages.MoveNextAsync(), Is.True);
                 Assert.That(messages.Current, Is.TypeOf<StreamCommitMessage>());
                 return;
             case CommitMessage:
@@ -987,16 +987,16 @@ CREATE PUBLICATION {publicationName} FOR TABLE {tableName};
         async ValueTask<TExpected> NextMessage<TExpected>(IAsyncEnumerator<PgOutputReplicationMessage> enumerator, bool expectRelationMessage = false)
             where TExpected : PgOutputReplicationMessage
         {
-            Assert.True(await enumerator.MoveNextAsync());
+            Assert.That(await enumerator.MoveNextAsync(), Is.True);
             if (IsStreaming && enumerator.Current is StreamStopMessage)
             {
-                Assert.True(await enumerator.MoveNextAsync());
+                Assert.That(await enumerator.MoveNextAsync(), Is.True);
                 Assert.That(enumerator.Current, Is.TypeOf<StreamStartMessage>());
-                Assert.True(await enumerator.MoveNextAsync());
+                Assert.That(await enumerator.MoveNextAsync(), Is.True);
                 if (expectRelationMessage)
                 {
                     Assert.That(enumerator.Current, Is.TypeOf<RelationMessage>());
-                    Assert.True(await enumerator.MoveNextAsync());
+                    Assert.That(await enumerator.MoveNextAsync(), Is.True);
                 }
             }
 

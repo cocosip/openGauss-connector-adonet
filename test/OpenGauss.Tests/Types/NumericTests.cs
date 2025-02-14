@@ -137,7 +137,7 @@ namespace OpenGauss.Tests.Types
         }
 
         [Test, Description("Tests that when Numeric value does not fit in a System.Decimal and reader is in ReaderState.InResult, the value was read wholly and it is safe to continue reading")]
-        [Timeout(5000)]
+        [CancelAfter(5000)]
         public async Task Read_overflow_is_safe()
         {
             using var conn = await OpenConnectionAsync();

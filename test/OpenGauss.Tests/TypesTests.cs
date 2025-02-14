@@ -25,95 +25,95 @@ namespace OpenGauss.Tests
 
             input = "1 day";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(1).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(1).Ticks), input);
 
             input = "2 days";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(2).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(2).Ticks), input);
 
             input = "2 days 3:04:05";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(2, 3, 4, 5).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(2, 3, 4, 5).Ticks), input);
 
             input = "-2 days";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(-2).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(-2).Ticks), input);
 
             input = "-2 days -3:04:05";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(-2, -3, -4, -5).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(-2, -3, -4, -5).Ticks), input);
 
             input = "-2 days -0:01:02";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(-2, 0, -1, -2).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(-2, 0, -1, -2).Ticks), input);
 
             input = "2 days -12:00";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(2, -12, 0, 0).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(2, -12, 0, 0).Ticks), input);
 
             input = "1 mon";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30).Ticks), input);
 
             input = "2 mons";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(60).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(60).Ticks), input);
 
             input = "1 mon -1 day";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(29).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(29).Ticks), input);
 
             input = "1 mon -2 days";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(28).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(28).Ticks), input);
 
             input = "-1 mon -2 days -3:04:05";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(-32, -3, -4, -5).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(-32, -3, -4, -5).Ticks), input);
 
             input = "1 year";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*12).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 12).Ticks), input);
 
             input = "2 years";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*24).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 24).Ticks), input);
 
             input = "1 year -1 mon";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*11).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 11).Ticks), input);
 
             input = "1 year -2 mons";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*10).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 10).Ticks), input);
 
             input = "1 year -1 day";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*12 - 1).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 12 - 1).Ticks), input);
 
             input = "1 year -2 days";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*12 - 2).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 12 - 2).Ticks), input);
 
             input = "1 year -1 mon -1 day";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*11 - 1).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 11 - 1).Ticks), input);
 
             input = "1 year -2 mons -2 days";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(TimeSpan.FromDays(30*10 - 2).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(TimeSpan.FromDays(30 * 10 - 2).Ticks), input);
 
             input = "1 day 2:3:4.005";
             test = OpenGaussTimeSpan.Parse(input);
-            Assert.AreEqual(new TimeSpan(1, 2, 3, 4, 5).Ticks, test.TotalTicks, input);
+            Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(1, 2, 3, 4, 5).Ticks), input);
 
             var testCulture = new CultureInfo("fr-FR");
-            Assert.AreEqual(",", testCulture.NumberFormat.NumberDecimalSeparator, "decimal seperator");
+            Assert.That(testCulture.NumberFormat.NumberDecimalSeparator, Is.EqualTo(","), "decimal seperator");
             using (TestUtil.SetCurrentCulture(testCulture))
             {
                 input = "1 day 2:3:4.005";
                 test = OpenGaussTimeSpan.Parse(input);
-                Assert.AreEqual(new TimeSpan(1, 2, 3, 4, 5).Ticks, test.TotalTicks, input);
+                Assert.That(test.TotalTicks, Is.EqualTo(new TimeSpan(1, 2, 3, 4, 5).Ticks), input);
             }
         }
 
@@ -123,111 +123,110 @@ namespace OpenGauss.Tests
             OpenGaussTimeSpan test;
 
             test = new OpenGaussTimeSpan();
-            Assert.AreEqual(0, test.Months, "Months");
-            Assert.AreEqual(0, test.Days, "Days");
-            Assert.AreEqual(0, test.Hours, "Hours");
-            Assert.AreEqual(0, test.Minutes, "Minutes");
-            Assert.AreEqual(0, test.Seconds, "Seconds");
-            Assert.AreEqual(0, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(0, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(0), "Months");
+            Assert.That(test.Days, Is.EqualTo(0), "Days");
+            Assert.That(test.Hours, Is.EqualTo(0), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(0), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(0), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(0), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(0), "Microseconds");
 
             test = new OpenGaussTimeSpan(1234567890);
-            Assert.AreEqual(0, test.Months, "Months");
-            Assert.AreEqual(0, test.Days, "Days");
-            Assert.AreEqual(0, test.Hours, "Hours");
-            Assert.AreEqual(2, test.Minutes, "Minutes");
-            Assert.AreEqual(3, test.Seconds, "Seconds");
-            Assert.AreEqual(456, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(456789, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(0), "Months");
+            Assert.That(test.Days, Is.EqualTo(0), "Days");
+            Assert.That(test.Hours, Is.EqualTo(0), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(2), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(3), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(456), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(456789), "Microseconds");
 
             test = new OpenGaussTimeSpan(new TimeSpan(1, 2, 3, 4, 5)).JustifyInterval();
-            Assert.AreEqual(0, test.Months, "Months");
-            Assert.AreEqual(1, test.Days, "Days");
-            Assert.AreEqual(2, test.Hours, "Hours");
-            Assert.AreEqual(3, test.Minutes, "Minutes");
-            Assert.AreEqual(4, test.Seconds, "Seconds");
-            Assert.AreEqual(5, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(5000, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(0), "Months");
+            Assert.That(test.Days, Is.EqualTo(1), "Days");
+            Assert.That(test.Hours, Is.EqualTo(2), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(3), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(4), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(5), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(5000), "Microseconds");
 
             test = new OpenGaussTimeSpan(3, 2, 1234567890);
-            Assert.AreEqual(3, test.Months, "Months");
-            Assert.AreEqual(2, test.Days, "Days");
-            Assert.AreEqual(0, test.Hours, "Hours");
-            Assert.AreEqual(2, test.Minutes, "Minutes");
-            Assert.AreEqual(3, test.Seconds, "Seconds");
-            Assert.AreEqual(456, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(456789, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(3), "Months");
+            Assert.That(test.Days, Is.EqualTo(2), "Days");
+            Assert.That(test.Hours, Is.EqualTo(0), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(2), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(3), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(456), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(456789), "Microseconds");
 
             test = new OpenGaussTimeSpan(1, 2, 3, 4);
-            Assert.AreEqual(0, test.Months, "Months");
-            Assert.AreEqual(1, test.Days, "Days");
-            Assert.AreEqual(2, test.Hours, "Hours");
-            Assert.AreEqual(3, test.Minutes, "Minutes");
-            Assert.AreEqual(4, test.Seconds, "Seconds");
-            Assert.AreEqual(0, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(0, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(0), "Months");
+            Assert.That(test.Days, Is.EqualTo(1), "Days");
+            Assert.That(test.Hours, Is.EqualTo(2), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(3), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(4), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(0), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(0), "Microseconds");
 
             test = new OpenGaussTimeSpan(1, 2, 3, 4, 5);
-            Assert.AreEqual(0, test.Months, "Months");
-            Assert.AreEqual(1, test.Days, "Days");
-            Assert.AreEqual(2, test.Hours, "Hours");
-            Assert.AreEqual(3, test.Minutes, "Minutes");
-            Assert.AreEqual(4, test.Seconds, "Seconds");
-            Assert.AreEqual(5, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(5000, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(0), "Months");
+            Assert.That(test.Days, Is.EqualTo(1), "Days");
+            Assert.That(test.Hours, Is.EqualTo(2), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(3), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(4), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(5), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(5000), "Microseconds");
 
             test = new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6);
-            Assert.AreEqual(1, test.Months, "Months");
-            Assert.AreEqual(2, test.Days, "Days");
-            Assert.AreEqual(3, test.Hours, "Hours");
-            Assert.AreEqual(4, test.Minutes, "Minutes");
-            Assert.AreEqual(5, test.Seconds, "Seconds");
-            Assert.AreEqual(6, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(6000, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(1), "Months");
+            Assert.That(test.Days, Is.EqualTo(2), "Days");
+            Assert.That(test.Hours, Is.EqualTo(3), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(4), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(5), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(6), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(6000), "Microseconds");
 
             test = new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6, 7);
-            Assert.AreEqual(14, test.Months, "Months");
-            Assert.AreEqual(3, test.Days, "Days");
-            Assert.AreEqual(4, test.Hours, "Hours");
-            Assert.AreEqual(5, test.Minutes, "Minutes");
-            Assert.AreEqual(6, test.Seconds, "Seconds");
-            Assert.AreEqual(7, test.Milliseconds, "Milliseconds");
-            Assert.AreEqual(7000, test.Microseconds, "Microseconds");
+            Assert.That(test.Months, Is.EqualTo(14), "Months");
+            Assert.That(test.Days, Is.EqualTo(3), "Days");
+            Assert.That(test.Hours, Is.EqualTo(4), "Hours");
+            Assert.That(test.Minutes, Is.EqualTo(5), "Minutes");
+            Assert.That(test.Seconds, Is.EqualTo(6), "Seconds");
+            Assert.That(test.Milliseconds, Is.EqualTo(7), "Milliseconds");
+            Assert.That(test.Microseconds, Is.EqualTo(7000), "Microseconds");
         }
 
         [Test]
         public void OpenGaussIntervalToString()
         {
-            Assert.AreEqual("00:00:00", new OpenGaussTimeSpan().ToString());
+            Assert.That(new OpenGaussTimeSpan().ToString(), Is.EqualTo("00:00:00"));
 
-            Assert.AreEqual("00:02:03.456789", new OpenGaussTimeSpan(1234567890).ToString());
+            Assert.That(new OpenGaussTimeSpan(1234567890).ToString(), Is.EqualTo("00:02:03.456789"));
 
-            Assert.AreEqual("00:02:03.456789", new OpenGaussTimeSpan(1234567891).ToString());
+            Assert.That(new OpenGaussTimeSpan(1234567891).ToString(), Is.EqualTo("00:02:03.456789"));
 
-            Assert.AreEqual("1 day 02:03:04.005",
-                            new OpenGaussTimeSpan(new TimeSpan(1, 2, 3, 4, 5)).JustifyInterval().ToString());
+            Assert.That(new OpenGaussTimeSpan(new TimeSpan(1, 2, 3, 4, 5)).JustifyInterval().ToString(), Is.EqualTo("1 day 02:03:04.005"));
 
-            Assert.AreEqual("3 mons 2 days 00:02:03.456789", new OpenGaussTimeSpan(3, 2, 1234567890).ToString());
+            Assert.That(new OpenGaussTimeSpan(3, 2, 1234567890).ToString(), Is.EqualTo("3 mons 2 days 00:02:03.456789"));
 
-            Assert.AreEqual("1 day 02:03:04", new OpenGaussTimeSpan(1, 2, 3, 4).ToString());
+            Assert.That(new OpenGaussTimeSpan(1, 2, 3, 4).ToString(), Is.EqualTo("1 day 02:03:04"));
 
-            Assert.AreEqual("1 day 02:03:04.005", new OpenGaussTimeSpan(1, 2, 3, 4, 5).ToString());
+            Assert.That(new OpenGaussTimeSpan(1, 2, 3, 4, 5).ToString(), Is.EqualTo("1 day 02:03:04.005"));
 
-            Assert.AreEqual("1 mon 2 days 03:04:05.006", new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6).ToString());
+            Assert.That(new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6).ToString(), Is.EqualTo("1 mon 2 days 03:04:05.006"));
 
-            Assert.AreEqual("14 mons 3 days 04:05:06.007", new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6, 7).ToString());
+            Assert.That(new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6, 7).ToString(), Is.EqualTo("14 mons 3 days 04:05:06.007"));
 
-            Assert.AreEqual(new OpenGaussTimeSpan(0, 2, 3, 4, 5).ToString(), new OpenGaussTimeSpan(new TimeSpan(0, 2, 3, 4, 5)).ToString());
+            Assert.That(new OpenGaussTimeSpan(new TimeSpan(0, 2, 3, 4, 5)).ToString(), Is.EqualTo(new OpenGaussTimeSpan(0, 2, 3, 4, 5).ToString()));
 
-            Assert.AreEqual(new OpenGaussTimeSpan(1, 2, 3, 4, 5).ToString(), new OpenGaussTimeSpan(new TimeSpan(1, 2, 3, 4, 5)).ToString());
-            const long moreThanAMonthInTicks = TimeSpan.TicksPerDay*40;
-            Assert.AreEqual(new OpenGaussTimeSpan(moreThanAMonthInTicks).ToString(), new OpenGaussTimeSpan(new TimeSpan(moreThanAMonthInTicks)).ToString());
+            Assert.That(new OpenGaussTimeSpan(new TimeSpan(1, 2, 3, 4, 5)).ToString(), Is.EqualTo(new OpenGaussTimeSpan(1, 2, 3, 4, 5).ToString()));
+            const long moreThanAMonthInTicks = TimeSpan.TicksPerDay * 40;
+            Assert.That(new OpenGaussTimeSpan(new TimeSpan(moreThanAMonthInTicks)).ToString(), Is.EqualTo(new OpenGaussTimeSpan(moreThanAMonthInTicks).ToString()));
 
             var testCulture = new CultureInfo("fr-FR");
-            Assert.AreEqual(",", testCulture.NumberFormat.NumberDecimalSeparator, "decimal seperator");
+            Assert.That(testCulture.NumberFormat.NumberDecimalSeparator, Is.EqualTo(","), "decimal seperator");
             using (TestUtil.SetCurrentCulture(testCulture))
             {
-                Assert.AreEqual("14 mons 3 days 04:05:06.007", new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6, 7).ToString());
+                Assert.That(new OpenGaussTimeSpan(1, 2, 3, 4, 5, 6, 7).ToString(), Is.EqualTo("14 mons 3 days 04:05:06.007"));
             }
         }
 
@@ -239,42 +238,42 @@ namespace OpenGauss.Tests
             System.Globalization.Calendar calendar = new System.Globalization.GregorianCalendar();
 
             date = new OpenGaussDate();
-            Assert.AreEqual(1, date.Day);
-            Assert.AreEqual(DayOfWeek.Monday, date.DayOfWeek);
-            Assert.AreEqual(1, date.DayOfYear);
-            Assert.AreEqual(false, date.IsLeapYear);
-            Assert.AreEqual(1, date.Month);
-            Assert.AreEqual(1, date.Year);
+            Assert.That(date.Day, Is.EqualTo(1));
+            Assert.That(date.DayOfWeek, Is.EqualTo(DayOfWeek.Monday));
+            Assert.That(date.DayOfYear, Is.EqualTo(1));
+            Assert.That(date.IsLeapYear, Is.EqualTo(false));
+            Assert.That(date.Month, Is.EqualTo(1));
+            Assert.That(date.Year, Is.EqualTo(1));
 
             dateTime = new DateTime(2009, 5, 31);
             date = new OpenGaussDate(dateTime);
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(2009), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(2009)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
             //Console.WriteLine(new DateTime(2009, 5, 31).Ticks);
             //Console.WriteLine((new DateTime(2009, 5, 31) - new DateTime(1, 1, 1)).TotalDays);
             // 2009-5-31
             dateTime = new DateTime(633793248000000000); // ticks since 1 Jan 1
             date = new OpenGaussDate(733557); // days since 1 Jan 1
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(2009), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(2009)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
             // copy previous value.  should get same result
             date = new OpenGaussDate(date);
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(2009), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(2009)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
 #if NET6_0_OR_GREATER
             date = new OpenGaussDate(new DateOnly(2012, 3, 4));
@@ -287,14 +286,14 @@ namespace OpenGauss.Tests
         [Test]
         public void OpenGaussDateToString()
         {
-            Assert.AreEqual("2009-05-31", new OpenGaussDate(2009, 5, 31).ToString());
+            Assert.That(new OpenGaussDate(2009, 5, 31).ToString(), Is.EqualTo("2009-05-31"));
 
-            Assert.AreEqual("0001-05-07 BC", new OpenGaussDate(-1, 5, 7).ToString());
+            Assert.That(new OpenGaussDate(-1, 5, 7).ToString(), Is.EqualTo("0001-05-07 BC"));
 
             var testCulture = new CultureInfo("fr-FR");
-            Assert.AreEqual(",", testCulture.NumberFormat.NumberDecimalSeparator, "decimal seperator");
+            Assert.That(testCulture.NumberFormat.NumberDecimalSeparator, Is.EqualTo(","), "decimal seperator");
             using (TestUtil.SetCurrentCulture(testCulture))
-                Assert.AreEqual("2009-05-31", new OpenGaussDate(2009, 5, 31).ToString());
+                Assert.That(new OpenGaussDate(2009, 5, 31).ToString(), Is.EqualTo("2009-05-31"));
         }
 
         [Test]
@@ -307,41 +306,41 @@ namespace OpenGauss.Tests
             // a date after a leap year.
             dateTime = new DateTime(2008, 5, 31);
             date = new OpenGaussDate(dateTime);
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(2008), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(2008)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
             // A date that is a leap year day.
             dateTime = new DateTime(2000, 2, 29);
             date = new OpenGaussDate(2000, 2, 29);
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(2000), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(2000)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
             // A date that is not in a leap year.
             dateTime = new DateTime(1900, 3, 1);
             date = new OpenGaussDate(1900, 3, 1);
-            Assert.AreEqual(dateTime.Day, date.Day);
-            Assert.AreEqual(dateTime.DayOfWeek, date.DayOfWeek);
-            Assert.AreEqual(dateTime.DayOfYear, date.DayOfYear);
-            Assert.AreEqual(calendar.IsLeapYear(1900), date.IsLeapYear);
-            Assert.AreEqual(dateTime.Month, date.Month);
-            Assert.AreEqual(dateTime.Year, date.Year);
+            Assert.That(date.Day, Is.EqualTo(dateTime.Day));
+            Assert.That(date.DayOfWeek, Is.EqualTo(dateTime.DayOfWeek));
+            Assert.That(date.DayOfYear, Is.EqualTo(dateTime.DayOfYear));
+            Assert.That(date.IsLeapYear, Is.EqualTo(calendar.IsLeapYear(1900)));
+            Assert.That(date.Month, Is.EqualTo(dateTime.Month));
+            Assert.That(date.Year, Is.EqualTo(dateTime.Year));
 
             // a date after a leap year.
             date = new OpenGaussDate(-1, 12, 31);
-            Assert.AreEqual(31, date.Day);
-            Assert.AreEqual(DayOfWeek.Sunday, date.DayOfWeek);
-            Assert.AreEqual(366, date.DayOfYear);
-            Assert.AreEqual(true, date.IsLeapYear);
-            Assert.AreEqual(12, date.Month);
-            Assert.AreEqual(-1, date.Year);
+            Assert.That(date.Day, Is.EqualTo(31));
+            Assert.That(date.DayOfWeek, Is.EqualTo(DayOfWeek.Sunday));
+            Assert.That(date.DayOfYear, Is.EqualTo(366));
+            Assert.That(date.IsLeapYear, Is.EqualTo(true));
+            Assert.That(date.Month, Is.EqualTo(12));
+            Assert.That(date.Year, Is.EqualTo(-1));
         }
 
         [Test]
@@ -351,45 +350,45 @@ namespace OpenGauss.Tests
 
             // add a day to the empty constructor
             date = new OpenGaussDate() + new OpenGaussTimeSpan(0, 1, 0);
-            Assert.AreEqual(2, date.Day);
-            Assert.AreEqual(DayOfWeek.Tuesday, date.DayOfWeek);
-            Assert.AreEqual(2, date.DayOfYear);
-            Assert.AreEqual(false, date.IsLeapYear);
-            Assert.AreEqual(1, date.Month);
-            Assert.AreEqual(1, date.Year);
+            Assert.That(date.Day, Is.EqualTo(2));
+            Assert.That(date.DayOfWeek, Is.EqualTo(DayOfWeek.Tuesday));
+            Assert.That(date.DayOfYear, Is.EqualTo(2));
+            Assert.That(date.IsLeapYear, Is.EqualTo(false));
+            Assert.That(date.Month, Is.EqualTo(1));
+            Assert.That(date.Year, Is.EqualTo(1));
 
             // add a day the same value as the empty constructor
             date = new OpenGaussDate(1, 1, 1) + new OpenGaussTimeSpan(0, 1, 0);
-            Assert.AreEqual(2, date.Day);
-            Assert.AreEqual(DayOfWeek.Tuesday, date.DayOfWeek);
-            Assert.AreEqual(2, date.DayOfYear);
-            Assert.AreEqual(false, date.IsLeapYear);
-            Assert.AreEqual(1, date.Month);
-            Assert.AreEqual(1, date.Year);
+            Assert.That(date.Day, Is.EqualTo(2));
+            Assert.That(date.DayOfWeek, Is.EqualTo(DayOfWeek.Tuesday));
+            Assert.That(date.DayOfYear, Is.EqualTo(2));
+            Assert.That(date.IsLeapYear, Is.EqualTo(false));
+            Assert.That(date.Month, Is.EqualTo(1));
+            Assert.That(date.Year, Is.EqualTo(1));
 
             var diff = new OpenGaussDate(1, 1, 1) - new OpenGaussDate(-1, 12, 31);
-            Assert.AreEqual(new OpenGaussTimeSpan(0, 1, 0), diff);
+            Assert.That(diff, Is.EqualTo(new OpenGaussTimeSpan(0, 1, 0)));
 
             // Test of the addMonths method (positive values added)
             var dateForTestMonths = new OpenGaussDate(2008, 1, 1);
-            Assert.AreEqual(dateForTestMonths.AddMonths(0), dateForTestMonths);
-            Assert.AreEqual(dateForTestMonths.AddMonths(4), new OpenGaussDate(2008, 5, 1));
-            Assert.AreEqual(dateForTestMonths.AddMonths(11), new OpenGaussDate(2008, 12, 1));
-            Assert.AreEqual(dateForTestMonths.AddMonths(12), new OpenGaussDate(2009, 1, 1));
-            Assert.AreEqual(dateForTestMonths.AddMonths(14), new OpenGaussDate(2009, 3, 1));
+            Assert.That(dateForTestMonths, Is.EqualTo(dateForTestMonths.AddMonths(0)));
+            Assert.That(new OpenGaussDate(2008, 5, 1), Is.EqualTo(dateForTestMonths.AddMonths(4)));
+            Assert.That(new OpenGaussDate(2008, 12, 1), Is.EqualTo(dateForTestMonths.AddMonths(11)));
+            Assert.That(new OpenGaussDate(2009, 1, 1), Is.EqualTo(dateForTestMonths.AddMonths(12)));
+            Assert.That(new OpenGaussDate(2009, 3, 1), Is.EqualTo(dateForTestMonths.AddMonths(14)));
             dateForTestMonths = new OpenGaussDate(2008, 1, 31);
-            Assert.AreEqual(dateForTestMonths.AddMonths(1), new OpenGaussDate(2008, 2, 29));
-            Assert.AreEqual(dateForTestMonths.AddMonths(13), new OpenGaussDate(2009, 2, 28));
+            Assert.That(new OpenGaussDate(2008, 2, 29), Is.EqualTo(dateForTestMonths.AddMonths(1)));
+            Assert.That(new OpenGaussDate(2009, 2, 28), Is.EqualTo(dateForTestMonths.AddMonths(13)));
 
             // Test of the addMonths method (negative values added)
             dateForTestMonths = new OpenGaussDate(2009, 1, 1);
-            Assert.AreEqual(dateForTestMonths.AddMonths(0), dateForTestMonths);
-            Assert.AreEqual(dateForTestMonths.AddMonths(-4), new OpenGaussDate(2008, 9, 1));
-            Assert.AreEqual(dateForTestMonths.AddMonths(-12), new OpenGaussDate(2008, 1, 1));
-            Assert.AreEqual(dateForTestMonths.AddMonths(-13), new OpenGaussDate(2007, 12, 1));
+            Assert.That(dateForTestMonths, Is.EqualTo(dateForTestMonths.AddMonths(0)));
+            Assert.That(new OpenGaussDate(2008, 9, 1), Is.EqualTo(dateForTestMonths.AddMonths(-4)));
+            Assert.That(new OpenGaussDate(2008, 1, 1), Is.EqualTo(dateForTestMonths.AddMonths(-12)));
+            Assert.That(new OpenGaussDate(2007, 12, 1), Is.EqualTo(dateForTestMonths.AddMonths(-13)));
             dateForTestMonths = new OpenGaussDate(2009, 3, 31);
-            Assert.AreEqual(dateForTestMonths.AddMonths(-1), new OpenGaussDate(2009, 2, 28));
-            Assert.AreEqual(dateForTestMonths.AddMonths(-13), new OpenGaussDate(2008, 2, 29));
+            Assert.That(new OpenGaussDate(2009, 2, 28), Is.EqualTo(dateForTestMonths.AddMonths(-1)));
+            Assert.That(new OpenGaussDate(2008, 2, 29), Is.EqualTo(dateForTestMonths.AddMonths(-13)));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/3019")]
@@ -417,22 +416,22 @@ namespace OpenGauss.Tests
             OpenGaussTsVector vec;
 
             vec = OpenGaussTsVector.Parse("a");
-            Assert.AreEqual("'a'", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo("'a'"));
 
             vec = OpenGaussTsVector.Parse("a ");
-            Assert.AreEqual("'a'", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo("'a'"));
 
             vec = OpenGaussTsVector.Parse("a:1A");
-            Assert.AreEqual("'a':1A", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo("'a':1A"));
 
             vec = OpenGaussTsVector.Parse(@"\abc\def:1a ");
-            Assert.AreEqual("'abcdef':1A", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo("'abcdef':1A"));
 
             vec = OpenGaussTsVector.Parse(@"abc:3A 'abc' abc:4B 'hello''yo' 'meh\'\\':5");
-            Assert.AreEqual(@"'abc':3A,4B 'hello''yo' 'meh''\\':5", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo(@"'abc':3A,4B 'hello''yo' 'meh''\\':5"));
 
             vec = OpenGaussTsVector.Parse(" a:12345C  a:24D a:25B b c d 1 2 a:25A,26B,27,28");
-            Assert.AreEqual("'1' '2' 'a':24,25A,26B,27,28,12345C 'b' 'c' 'd'", vec.ToString());
+            Assert.That(vec.ToString(), Is.EqualTo("'1' '2' 'a':24,25A,26B,27,28,12345C 'b' 'c' 'd'"));
         }
 
         [Test]
@@ -447,27 +446,27 @@ namespace OpenGauss.Tests
             var str = query.ToString();
 
             query = OpenGaussTsQuery.Parse("a & b | c");
-            Assert.AreEqual("'a' & 'b' | 'c'", query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo("'a' & 'b' | 'c'"));
 
             query = OpenGaussTsQuery.Parse("'a''':*ab&d:d&!c");
-            Assert.AreEqual("'a''':*AB & 'd':D & !'c'", query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo("'a''':*AB & 'd':D & !'c'"));
 
             query = OpenGaussTsQuery.Parse("(a & !(c | d)) & (!!a&b) | c | d | e");
-            Assert.AreEqual("( ( 'a' & !( 'c' | 'd' ) & !( !'a' ) & 'b' | 'c' ) | 'd' ) | 'e'", query.ToString());
-            Assert.AreEqual(query.ToString(), OpenGaussTsQuery.Parse(query.ToString()).ToString());
+            Assert.That(query.ToString(), Is.EqualTo("( ( 'a' & !( 'c' | 'd' ) & !( !'a' ) & 'b' | 'c' ) | 'd' ) | 'e'"));
+            Assert.That(OpenGaussTsQuery.Parse(query.ToString()).ToString(), Is.EqualTo(query.ToString()));
 
             query = OpenGaussTsQuery.Parse("(((a:*)))");
-            Assert.AreEqual("'a':*", query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo("'a':*"));
 
             query = OpenGaussTsQuery.Parse(@"'a\\b''cde'");
-            Assert.AreEqual(@"a\b'cde", ((OpenGaussTsQueryLexeme)query).Text);
-            Assert.AreEqual(@"'a\\b''cde'", query.ToString());
+            Assert.That(((OpenGaussTsQueryLexeme)query).Text, Is.EqualTo(@"a\b'cde"));
+            Assert.That(query.ToString(), Is.EqualTo(@"'a\\b''cde'"));
 
             query = OpenGaussTsQuery.Parse(@"a <-> b");
-            Assert.AreEqual("'a' <-> 'b'", query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo("'a' <-> 'b'"));
 
             query = OpenGaussTsQuery.Parse("((a & b) <5> c) <-> !d <0> e");
-            Assert.AreEqual("( ( 'a' & 'b' <5> 'c' ) <-> !'d' ) <0> 'e'", query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo("( ( 'a' & 'b' <5> 'c' ) <-> !'d' ) <0> 'e'"));
 
             Assert.Throws(typeof(FormatException), () => OpenGaussTsQuery.Parse("a b c & &"));
             Assert.Throws(typeof(FormatException), () => OpenGaussTsQuery.Parse("&"));
@@ -559,18 +558,18 @@ namespace OpenGauss.Tests
 
             void AreEqual(OpenGaussTsQuery left, OpenGaussTsQuery right)
             {
-                Assert.True(left == right);
-                Assert.False(left != right);
-                Assert.AreEqual(left, right);
-                Assert.AreEqual(left.GetHashCode(), right.GetHashCode());
+                Assert.That(left == right, Is.True);
+                Assert.That(left != right, Is.False);
+                Assert.That(right, Is.EqualTo(left));
+                Assert.That(right.GetHashCode(), Is.EqualTo(left.GetHashCode()));
             }
 
             void AreNotEqual(OpenGaussTsQuery left, OpenGaussTsQuery right)
             {
-                Assert.False(left == right);
-                Assert.True(left != right);
-                Assert.AreNotEqual(left, right);
-                Assert.AreNotEqual(left.GetHashCode(), right.GetHashCode());
+                Assert.That(left == right, Is.False);
+                Assert.That(left != right, Is.True);
+                Assert.That(right, Is.Not.EqualTo(left));
+                Assert.That(right.GetHashCode(), Is.Not.EqualTo(left.GetHashCode()));
             }
         }
 
@@ -579,7 +578,7 @@ namespace OpenGauss.Tests
         {
             var query = OpenGaussTsQuery.Parse("!a <-> b & c | d & e");
             var expectedGrouping = OpenGaussTsQuery.Parse("((!(a) <-> b) & c) | (d & e)");
-            Assert.AreEqual(expectedGrouping.ToString(), query.ToString());
+            Assert.That(query.ToString(), Is.EqualTo(expectedGrouping.ToString()));
         }
 
         [Test]

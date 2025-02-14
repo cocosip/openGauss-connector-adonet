@@ -98,16 +98,16 @@ CREATE OR REPLACE VIEW {view} (id, int2) AS SELECT id, int2 + int2 AS int2 FROM 
                     if (conn.PostgreSqlVersion < new Version("9.4"))
                     {
                         // 9.3 and earlier: IsUpdatable = False
-                        Assert.IsTrue((bool)r["IsReadonly"], "field_pk");
+                        Assert.That((bool)r["IsReadonly"], Is.True, "field_pk");
                     }
                     else
                     {
                         // 9.4: IsUpdatable = True
-                        Assert.IsFalse((bool)r["IsReadonly"], "field_pk");
+                        Assert.That((bool)r["IsReadonly"], Is.True, "field_pk");
                     }
                     break;
                 case "field_int2":
-                    Assert.IsTrue((bool)r["IsReadonly"]);
+                    Assert.That((bool)r["IsReadonly"], Is.True);
                     break;
                 }
             }
@@ -129,10 +129,10 @@ CREATE OR REPLACE VIEW {view} (id, int2) AS SELECT id, int2 + int2 AS int2 FROM 
                 switch ((string)row["ColumnName"])
                 {
                 case "nullable":
-                    Assert.IsTrue(isNullable);
+                    Assert.That(isNullable, Is.True);
                     continue;
                 case "non_nullable":
-                    Assert.IsFalse(isNullable);
+                    Assert.That(isNullable, Is.False);
                     continue;
                 }
             }

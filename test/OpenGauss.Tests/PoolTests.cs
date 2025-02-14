@@ -54,7 +54,7 @@ namespace OpenGauss.Tests
             Assert.That(conn.Connector.BackendProcessId, Is.EqualTo(backendId));
         }
 
-        [Test, Timeout(10000)]
+        [Test, CancelAfter(10000)]
         public void Get_connector_from_exhausted_pool()
         {
             var connString = new OpenGaussConnectionStringBuilder(ConnectionString)
@@ -143,7 +143,7 @@ namespace OpenGauss.Tests
                 conn3.Open();
         }
 
-        [Test, Timeout(10000)]
+        [Test, CancelAfter(10000)]
         [Explicit("Timing-based")]
         public async Task OpenAsync_cancel()
         {
@@ -156,7 +156,7 @@ namespace OpenGauss.Tests
             using var conn1 = CreateConnection(connString);
             await conn1.OpenAsync();
 
-            Assert.True(PoolManager.TryGetValue(connString, out var pool));
+            Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
             AssertPoolState(pool, open: 1, idle: 0);
 
             // Pool is exhausted
@@ -245,7 +245,7 @@ namespace OpenGauss.Tests
             using var conn1 = OpenConnection(connString);
             using var conn2 = OpenConnection(connString);
             using var conn3 = OpenConnection(connString);
-            Assert.True(PoolManager.TryGetValue(connString, out var pool));
+            Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
 
             conn1.Close();
             conn2.Close();
@@ -284,7 +284,7 @@ namespace OpenGauss.Tests
             {
                 conn1.Open();   // Pool is now exhausted
 
-                Assert.True(PoolManager.TryGetValue(connString, out var pool));
+                Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
                 AssertPoolState(pool, open: 1, idle: 0);
 
                 Func<Task<int>> asyncOpener = async () =>
@@ -364,7 +364,7 @@ namespace OpenGauss.Tests
             {
                 using (conn = OpenConnection(connString)) { }
                 // Now have one connection in the pool
-                Assert.True(PoolManager.TryGetValue(connString, out var pool));
+                Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
                 AssertPoolState(pool, open: 1, idle: 1);
 
                 OpenGaussConnection.ClearPool(conn);
@@ -386,7 +386,7 @@ namespace OpenGauss.Tests
                 OpenGaussConnection.ClearPool(conn);
                 // conn is still busy but should get closed when returned to the pool
 
-                Assert.True(PoolManager.TryGetValue(connString, out pool));
+                Assert.That(PoolManager.TryGetValue(connString, out pool), Is.True);
                 AssertPoolState(pool, open: 1, idle: 0);
             }
             AssertPoolState(pool, open: 0, idle: 0);
@@ -417,7 +417,7 @@ namespace OpenGauss.Tests
                 Assert.That(() => conn.Open(), Throws.Exception
                     .TypeOf<OpenGaussException>()
                     .With.InnerException.TypeOf<SocketException>());
-            Assert.True(PoolManager.TryGetValue(connString, out var pool));
+            Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
             AssertPoolState(pool, open: 0, idle: 0);
         }
 

@@ -53,10 +53,10 @@ namespace OpenGauss.Tests.Types
             cmd.Parameters.AddWithValue("p", OpenGaussDbType.Tid, expected);
             using var reader = await cmd.ExecuteReaderAsync();
             reader.Read();
-            Assert.AreEqual(1234, reader.GetFieldValue<OpenGaussTid>(0).BlockNumber);
-            Assert.AreEqual(40000, reader.GetFieldValue<OpenGaussTid>(0).OffsetNumber);
-            Assert.AreEqual(expected.BlockNumber, reader.GetFieldValue<OpenGaussTid>(1).BlockNumber);
-            Assert.AreEqual(expected.OffsetNumber, reader.GetFieldValue<OpenGaussTid>(1).OffsetNumber);
+            Assert.That(reader.GetFieldValue<OpenGaussTid>(0).BlockNumber, Is.EqualTo(1234));
+            Assert.That(reader.GetFieldValue<OpenGaussTid>(0).OffsetNumber, Is.EqualTo(40000));
+            Assert.That(reader.GetFieldValue<OpenGaussTid>(1).BlockNumber, Is.EqualTo(expected.BlockNumber));
+            Assert.That(reader.GetFieldValue<OpenGaussTid>(1).OffsetNumber, Is.EqualTo(expected.OffsetNumber));
         }
 
         #region OpenGaussLogSequenceNumber / PgLsn
@@ -78,7 +78,7 @@ namespace OpenGauss.Tests.Types
         public async Task OpenGaussLogSequenceNumber()
         {
             var expected1 = new OpenGaussLogSequenceNumber(42949672971ul);
-            Assert.AreEqual(expected1, OpenGauss.NET.Types.OpenGaussLogSequenceNumber.Parse("A/B"));
+            Assert.That(OpenGauss.NET.Types.OpenGaussLogSequenceNumber.Parse("A/B"), Is.EqualTo(expected1));
             await using var conn = await OpenConnectionAsync();
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT 'A/B'::pg_lsn, @p::pg_lsn";
@@ -87,16 +87,16 @@ namespace OpenGauss.Tests.Types
             reader.Read();
             var result1 = reader.GetFieldValue<OpenGaussLogSequenceNumber>(0);
             var result2 = reader.GetFieldValue<OpenGaussLogSequenceNumber>(1);
-            Assert.AreEqual(expected1, result1);
-            Assert.AreEqual(42949672971ul, (ulong)result1);
-            Assert.AreEqual("A/B", result1.ToString());
-            Assert.AreEqual(expected1, result2);
-            Assert.AreEqual(42949672971ul, (ulong)result2);
-            Assert.AreEqual("A/B", result2.ToString());
+            Assert.That(result1, Is.EqualTo(expected1));
+            Assert.That((ulong)result1, Is.EqualTo(42949672971ul));
+            Assert.That(result1.ToString(), Is.EqualTo("A/B"));
+            Assert.That(result2, Is.EqualTo(expected1));
+            Assert.That((ulong)result2, Is.EqualTo(42949672971ul));
+            Assert.That(result2.ToString(), Is.EqualTo("A/B"));
         }
 
         #endregion OpenGaussLogSequenceNumber / PgLsn
 
-        public InternalTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public InternalTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

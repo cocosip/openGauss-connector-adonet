@@ -57,7 +57,7 @@ namespace OpenGauss.Tests
     //    }
 
     //    [Test, IssueLink("https://github.com/opengauss/opengauss/issues/1024")]
-    //    [Timeout(10000)]
+    //    [CancelAfter(10000)]
     //    public void Wait()
     //    {
     //        using var conn = OpenConnection();
@@ -72,7 +72,7 @@ namespace OpenGauss.Tests
     //    }
 
     //    [Test, IssueLink("https://github.com/opengauss/opengauss/issues/1024")]
-    //    //[Timeout(10000)]
+    //    //[CancelAfter(10000)]
     //    public void Wait_with_timeout()
     //    {
     //        using var conn = OpenConnection();
@@ -89,7 +89,7 @@ namespace OpenGauss.Tests
     //    }
 
     //    [Test, IssueLink("https://github.com/opengauss/opengauss/issues/1024")]
-    //    [Timeout(10000)]
+    //    [CancelAfter(10000)]
     //    public async Task WaitAsync()
     //    {
     //        using var conn = OpenConnection();

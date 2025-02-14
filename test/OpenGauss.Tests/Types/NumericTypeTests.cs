@@ -27,7 +27,7 @@ namespace OpenGauss.Tests.Types
             var p2 = new OpenGaussParameter("p2", DbType.Int16);
             var p3 = new OpenGaussParameter("p3", DbType.Byte);
             var p4 = new OpenGaussParameter { ParameterName = "p4", Value = (short)8 };
-            var p5 = new OpenGaussParameter { ParameterName = "p5", Value = (byte)8  };
+            var p5 = new OpenGaussParameter { ParameterName = "p5", Value = (byte)8 };
             Assert.That(p4.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Smallint));
             Assert.That(p4.DbType, Is.EqualTo(DbType.Int16));
             cmd.Parameters.Add(p1);
@@ -74,24 +74,24 @@ namespace OpenGauss.Tests.Types
 
             for (var i = 0; i < cmd.Parameters.Count; i++)
             {
-                Assert.That(reader.GetInt32(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetInt64(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetInt16(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetByte(i),                  Is.EqualTo(8));
-                Assert.That(reader.GetFloat(i),                 Is.EqualTo(8.0f));
-                Assert.That(reader.GetDouble(i),                Is.EqualTo(8.0d));
-                Assert.That(reader.GetDecimal(i),               Is.EqualTo(8.0m));
-                Assert.That(reader.GetValue(i),                 Is.EqualTo(8));
+                Assert.That(reader.GetInt32(i), Is.EqualTo(8));
+                Assert.That(reader.GetInt64(i), Is.EqualTo(8));
+                Assert.That(reader.GetInt16(i), Is.EqualTo(8));
+                Assert.That(reader.GetByte(i), Is.EqualTo(8));
+                Assert.That(reader.GetFloat(i), Is.EqualTo(8.0f));
+                Assert.That(reader.GetDouble(i), Is.EqualTo(8.0d));
+                Assert.That(reader.GetDecimal(i), Is.EqualTo(8.0m));
+                Assert.That(reader.GetValue(i), Is.EqualTo(8));
                 Assert.That(reader.GetProviderSpecificValue(i), Is.EqualTo(8));
-                Assert.That(reader.GetFieldType(i),             Is.EqualTo(typeof(int)));
-                Assert.That(reader.GetDataTypeName(i),          Is.EqualTo("integer"));
+                Assert.That(reader.GetFieldType(i), Is.EqualTo(typeof(int)));
+                Assert.That(reader.GetDataTypeName(i), Is.EqualTo("integer"));
             }
         }
 
         [Test, Description("Tests some types which are aliased to UInt32")]
-        [TestCase(OpenGaussDbType.Oid, TestName="OID")]
+        [TestCase(OpenGaussDbType.Oid, TestName = "OID")]
         //[TestCase(OpenGaussDbType.Xid, TestName="XID")]
-        [TestCase(OpenGaussDbType.Cid, TestName="CID")]
+        [TestCase(OpenGaussDbType.Cid, TestName = "CID")]
         public async Task UInt32(OpenGaussDbType opengaussDbType)
         {
             var expected = 8u;
@@ -139,17 +139,17 @@ namespace OpenGauss.Tests.Types
 
             for (var i = 0; i < cmd.Parameters.Count; i++)
             {
-                Assert.That(reader.GetInt64(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetInt16(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetInt32(i),                 Is.EqualTo(8));
-                Assert.That(reader.GetByte(i),                  Is.EqualTo(8));
-                Assert.That(reader.GetFloat(i),                 Is.EqualTo(8.0f));
-                Assert.That(reader.GetDouble(i),                Is.EqualTo(8.0d));
-                Assert.That(reader.GetDecimal(i),               Is.EqualTo(8.0m));
-                Assert.That(reader.GetValue(i),                 Is.EqualTo(8));
+                Assert.That(reader.GetInt64(i), Is.EqualTo(8));
+                Assert.That(reader.GetInt16(i), Is.EqualTo(8));
+                Assert.That(reader.GetInt32(i), Is.EqualTo(8));
+                Assert.That(reader.GetByte(i), Is.EqualTo(8));
+                Assert.That(reader.GetFloat(i), Is.EqualTo(8.0f));
+                Assert.That(reader.GetDouble(i), Is.EqualTo(8.0d));
+                Assert.That(reader.GetDecimal(i), Is.EqualTo(8.0m));
+                Assert.That(reader.GetValue(i), Is.EqualTo(8));
                 Assert.That(reader.GetProviderSpecificValue(i), Is.EqualTo(8));
-                Assert.That(reader.GetFieldType(i),             Is.EqualTo(typeof(long)));
-                Assert.That(reader.GetDataTypeName(i),          Is.EqualTo("bigint"));
+                Assert.That(reader.GetFieldType(i), Is.EqualTo(typeof(long)));
+                Assert.That(reader.GetDataTypeName(i), Is.EqualTo("bigint"));
             }
         }
 
@@ -161,7 +161,7 @@ namespace OpenGauss.Tests.Types
             const double expected = 4.123456789012345;
             var p1 = new OpenGaussParameter("p1", OpenGaussDbType.Double);
             var p2 = new OpenGaussParameter("p2", DbType.Double);
-            var p3 = new OpenGaussParameter {ParameterName = "p3", Value = expected};
+            var p3 = new OpenGaussParameter { ParameterName = "p3", Value = expected };
             cmd.Parameters.Add(p1);
             cmd.Parameters.Add(p2);
             cmd.Parameters.Add(p3);
@@ -197,7 +197,7 @@ namespace OpenGauss.Tests.Types
             using var cmd = new OpenGaussCommand("SELECT @p1, @p2, @p3", conn);
             var p1 = new OpenGaussParameter("p1", OpenGaussDbType.Real);
             var p2 = new OpenGaussParameter("p2", DbType.Single);
-            var p3 = new OpenGaussParameter {ParameterName = "p3", Value = expected};
+            var p3 = new OpenGaussParameter { ParameterName = "p3", Value = expected };
             cmd.Parameters.Add(p1);
             cmd.Parameters.Add(p2);
             cmd.Parameters.Add(p3);
@@ -254,7 +254,7 @@ namespace OpenGauss.Tests.Types
         {
             get
             {
-                yield return new TestCaseData(OpenGaussDbType.Smallint, 1D + byte.MaxValue){ };
+                yield return new TestCaseData(OpenGaussDbType.Smallint, 1D + byte.MaxValue) { };
             }
         }
         [Test, Description("Tests handling of numeric overflow when reading data")]
@@ -271,10 +271,10 @@ namespace OpenGauss.Tests.Types
             using (var conn = await OpenConnectionAsync())
             using (var cmd = new OpenGaussCommand($"SELECT {value}::{typeString}", conn))
             {
-                Assert.ThrowsAsync<OverflowException>(async() =>
+                Assert.ThrowsAsync<OverflowException>(async () =>
                 {
                     using var reader = await cmd.ExecuteReaderAsync();
-                    Assert.True(reader.Read());
+                    Assert.That(reader.Read(), Is.True);
                     reader.GetFieldValue<T>(0);
                 });
             }
@@ -283,9 +283,9 @@ namespace OpenGauss.Tests.Types
                 => dbType switch
                 {
                     OpenGaussDbType.Smallint => "int2",
-                    OpenGaussDbType.Integer  => "int4",
-                    OpenGaussDbType.Bigint   => "int8",
-                    _                     => throw new NotSupportedException()
+                    OpenGaussDbType.Integer => "int4",
+                    OpenGaussDbType.Bigint => "int8",
+                    _ => throw new NotSupportedException()
                 };
         }
 
@@ -297,7 +297,7 @@ namespace OpenGauss.Tests.Types
             using var conn = await OpenConnectionAsync();
             using var command = new OpenGaussCommand("select :field_float8", conn);
             command.Parameters.Add(new OpenGaussParameter(":field_float8", OpenGaussDbType.Double));
-            var x = 1d/7d;
+            var x = 1d / 7d;
             command.Parameters[0].Value = x;
             var valueReturned = await command.ExecuteScalarAsync();
             Assert.That(valueReturned, Is.EqualTo(x).Within(100).Ulps);
@@ -311,11 +311,11 @@ namespace OpenGauss.Tests.Types
             cmd.CommandText = "select '1'::MONEY, '12345'::MONEY / 100, '123456789012345'::MONEY / 100";
             using var reader = await cmd.ExecuteReaderAsync();
             reader.Read();
-            Assert.AreEqual(1M, reader.GetValue(0));
-            Assert.AreEqual(123.45M, reader.GetValue(1));
-            Assert.AreEqual(1234567890123.45M, reader.GetValue(2));
+            Assert.That(reader.GetValue(0), Is.EqualTo(1M));
+            Assert.That(reader.GetValue(1), Is.EqualTo(123.45M));
+            Assert.That(reader.GetValue(2), Is.EqualTo(1234567890123.45M));
         }
 
-        public NumericTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public NumericTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

@@ -20,7 +20,7 @@ namespace OpenGauss.Tests.Types
             cmd.CommandText = "Select :p";
             cmd.Parameters.AddWithValue("p", inputVec);
             var outputVec = await cmd.ExecuteScalarAsync();
-            Assert.AreEqual(inputVec.ToString(), outputVec!.ToString());
+            Assert.That(outputVec!.ToString(), Is.EqualTo(inputVec.ToString()));
         }
     }
 }

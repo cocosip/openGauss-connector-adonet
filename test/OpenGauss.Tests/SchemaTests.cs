@@ -218,7 +218,7 @@ namespace OpenGauss.Tests
         {
             using var conn = OpenConnection();
             var dt = await GetSchema(conn, "ForeignKeys");
-            Assert.IsNotNull(dt);
+            Assert.That(dt, Is.Not.Null);
         }
 
         [Test]
@@ -236,7 +236,7 @@ namespace OpenGauss.Tests
                                     string.Format(parameterMarkerFormat, parameterName);
             command.Parameters.Add(new OpenGaussParameter(parameterName, 4));
             using var reader = command.ExecuteReader();
-            Assert.IsTrue(reader.Read());
+            Assert.That(reader.Read(), Is.True);
             // This is OK, when no exceptions are occurred.
         }
 
@@ -453,7 +453,7 @@ CREATE UNIQUE INDEX idx_unique ON data (f1, f2);
                 Assert.That(columns[0]["column_name"], Is.EqualTo("f1"));
                 Assert.That(columns[1]["column_name"], Is.EqualTo("f2"));
 
-                string[] indexColumnRestrictions3 = { (string) database! , "gaussdb", "data", "idx_unique", "f1" };
+                string[] indexColumnRestrictions3 = { (string)database!, "gaussdb", "data", "idx_unique", "f1" };
                 var dataTable3 = await GetSchema(conn, "INDEXCOLUMNS", indexColumnRestrictions3);
                 var columns3 = dataTable3.Rows.Cast<DataRow>().ToList();
                 Assert.That(columns3.Count, Is.EqualTo(1));

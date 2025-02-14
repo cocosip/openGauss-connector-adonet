@@ -269,7 +269,7 @@ namespace OpenGauss.Tests
             };
 
             await using (var reader = await batch.ExecuteReaderAsync(CommandBehavior.CloseConnection | Behavior))
-                while (reader.Read()) {}
+                while (reader.Read()) { }
             Assert.That(conn.State, Is.EqualTo(ConnectionState.Closed));
         }
 
@@ -346,7 +346,7 @@ LANGUAGE 'plpgsql'");
             // resources are referenced by the exception above, which is very likely to escape the using statement of the command.
             batch.Dispose();
             var cmd2 = conn.CreateBatch();
-            Assert.AreNotSame(cmd2, batch);
+            Assert.That(cmd2, Is.Not.SameAs(batch));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/967")]
@@ -382,7 +382,7 @@ LANGUAGE 'plpgsql'");
             // resources are referenced by the exception above, which is very likely to escape the using statement of the command.
             batch.Dispose();
             var cmd2 = conn.CreateBatch();
-            Assert.AreNotSame(cmd2, batch);
+            Assert.That(cmd2, Is.Not.SameAs(batch));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/4202")]

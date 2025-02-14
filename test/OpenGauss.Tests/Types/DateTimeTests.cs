@@ -25,8 +25,8 @@ namespace OpenGauss.Tests.Types
             var opengaussDate = new OpenGaussDate(dateTime);
 
             using var cmd = new OpenGaussCommand("SELECT @p1, @p2", conn);
-            var p1 = new OpenGaussParameter("p1", OpenGaussDbType.Date) {Value = opengaussDate};
-            var p2 = new OpenGaussParameter {ParameterName = "p2", Value = opengaussDate};
+            var p1 = new OpenGaussParameter("p1", OpenGaussDbType.Date) { Value = opengaussDate };
+            var p2 = new OpenGaussParameter { ParameterName = "p2", Value = opengaussDate };
             Assert.That(p2.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Date));
             Assert.That(p2.DbType, Is.EqualTo(DbType.Date));
             cmd.Parameters.Add(p1);
@@ -108,8 +108,8 @@ namespace OpenGauss.Tests.Types
             var expected = new TimeSpan(0, 10, 45, 34, 500);
 
             using var cmd = new OpenGaussCommand("SELECT @p1, @p2", conn);
-            cmd.Parameters.Add(new OpenGaussParameter("p1", OpenGaussDbType.Time) {Value = expected});
-            cmd.Parameters.Add(new OpenGaussParameter("p2", DbType.Time) {Value = expected});
+            cmd.Parameters.Add(new OpenGaussParameter("p1", OpenGaussDbType.Time) { Value = expected });
+            cmd.Parameters.Add(new OpenGaussParameter("p2", DbType.Time) { Value = expected });
             using var reader = await cmd.ExecuteReaderAsync();
             reader.Read();
 
@@ -681,8 +681,8 @@ namespace OpenGauss.Tests.Types
         {
             var localtimestamp = new OpenGaussParameter { Value = DateTime.Now };
             var unspecifiedtimestamp = new OpenGaussParameter { Value = new DateTime() };
-            Assert.AreEqual(DbType.DateTime2, localtimestamp.DbType);
-            Assert.AreEqual(DbType.DateTime2, unspecifiedtimestamp.DbType);
+            Assert.That(localtimestamp.DbType, Is.EqualTo(DbType.DateTime2));
+            Assert.That(unspecifiedtimestamp.DbType, Is.EqualTo(DbType.DateTime2));
 
             // We don't support any DateTimeOffset other than offset 0 which maps to timestamptz,
             // we might add an exception for offset == DateTimeOffset.Now.Offset (local offset) mapping to timestamp at some point.
@@ -691,8 +691,8 @@ namespace OpenGauss.Tests.Types
 
             var timestamptz = new OpenGaussParameter { Value = DateTime.UtcNow };
             var dtotimestamptz = new OpenGaussParameter { Value = DateTimeOffset.UtcNow };
-            Assert.AreEqual(DbType.DateTime, timestamptz.DbType);
-            Assert.AreEqual(DbType.DateTime, dtotimestamptz.DbType);
+            Assert.That(timestamptz.DbType, Is.EqualTo(DbType.DateTime));
+            Assert.That(dtotimestamptz.DbType, Is.EqualTo(DbType.DateTime));
         }
 
         [Test]
@@ -700,13 +700,13 @@ namespace OpenGauss.Tests.Types
         {
             var localtimestamp = new OpenGaussParameter { Value = DateTime.Now };
             var unspecifiedtimestamp = new OpenGaussParameter { Value = new DateTime() };
-            Assert.AreEqual(OpenGaussDbType.Timestamp, localtimestamp.OpenGaussDbType);
-            Assert.AreEqual(OpenGaussDbType.Timestamp, unspecifiedtimestamp.OpenGaussDbType);
+            Assert.That(localtimestamp.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
+            Assert.That(unspecifiedtimestamp.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
 
             var timestamptz = new OpenGaussParameter { Value = DateTime.UtcNow };
             var dtotimestamptz = new OpenGaussParameter { Value = DateTimeOffset.UtcNow };
-            Assert.AreEqual(OpenGaussDbType.TimestampTz, timestamptz.OpenGaussDbType);
-            Assert.AreEqual(OpenGaussDbType.TimestampTz, dtotimestamptz.OpenGaussDbType);
+            Assert.That(timestamptz.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.TimestampTz));
+            Assert.That(dtotimestamptz.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.TimestampTz));
         }
 
         #endregion

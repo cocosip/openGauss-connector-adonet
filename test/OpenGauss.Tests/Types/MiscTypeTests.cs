@@ -55,7 +55,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             using (var cmd = new OpenGaussCommand("SELECT @p", conn))
             {
-                cmd.Parameters.Add(new OpenGaussParameter { ParameterName="p", Value = 8 });
+                cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", Value = 8 });
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
@@ -68,7 +68,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             using (var cmd = new OpenGaussCommand("SELECT @p", conn))
             {
-                cmd.Parameters.Add(new OpenGaussParameter { ParameterName="p", DataTypeName = "integer", Value = DBNull.Value });
+                cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", DataTypeName = "integer", Value = DBNull.Value });
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
@@ -133,7 +133,7 @@ namespace OpenGauss.Tests.Types
             var expected = new Guid("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
             var p1 = new OpenGaussParameter("p1", OpenGaussDbType.Uuid);
             var p2 = new OpenGaussParameter("p2", DbType.Guid);
-            var p3 = new OpenGaussParameter {ParameterName = "p3", Value = expected};
+            var p3 = new OpenGaussParameter { ParameterName = "p3", Value = expected };
             cmd.Parameters.Add(p1);
             cmd.Parameters.Add(p2);
             cmd.Parameters.Add(p3);
@@ -218,7 +218,7 @@ namespace OpenGauss.Tests.Types
         {
             using var conn = await OpenConnectionAsync();
             using var cmd = new OpenGaussCommand("SELECT @p", conn);
-            cmd.Parameters.Add(new OpenGaussParameter { ParameterName="p", DbType = DbType.Object, Value = 3 });
+            cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", DbType = DbType.Object, Value = 3 });
             Assert.That(await cmd.ExecuteScalarAsync(), Is.EqualTo(3));
         }
 
@@ -330,17 +330,17 @@ namespace OpenGauss.Tests.Types
             var expectedValue = 8.99m;
             command.Parameters.Add("moneyvalue", OpenGaussDbType.Money).Value = expectedValue;
             var result = (decimal?)await command.ExecuteScalarAsync();
-            Assert.AreEqual(expectedValue, result);
+            Assert.That(result, Is.EqualTo(expectedValue));
 
             expectedValue = 100m;
             command.Parameters[0].Value = expectedValue;
             result = (decimal?)await command.ExecuteScalarAsync();
-            Assert.AreEqual(expectedValue, result);
+            Assert.That(result, Is.EqualTo(expectedValue));
 
             expectedValue = 72.25m;
             command.Parameters[0].Value = expectedValue;
             result = (decimal?)await command.ExecuteScalarAsync();
-            Assert.AreEqual(expectedValue, result);
+            Assert.That(result, Is.EqualTo(expectedValue));
         }
 
         [Test]
@@ -365,7 +365,7 @@ CREATE TABLE {table} (
 
             command = new OpenGaussCommand($"SELECT person_uuid::uuid FROM {table} LIMIT 1", conn);
             var result = await command.ExecuteScalarAsync();
-            Assert.AreEqual(typeof(Guid), result!.GetType());
+            Assert.That(result!.GetType(), Is.EqualTo(typeof(Guid)));
         }
 
         [Test]
@@ -377,12 +377,12 @@ CREATE TABLE {table} (
             cmd.Parameters.AddWithValue("p1", OpenGaussDbType.Oidvector, new uint[] { 4, 5, 6 });
             using var rdr = await cmd.ExecuteReaderAsync();
             rdr.Read();
-            Assert.AreEqual(typeof(uint[]), rdr.GetValue(0).GetType());
-            Assert.AreEqual(typeof(uint[]), rdr.GetValue(1).GetType());
-            Assert.IsTrue(rdr.GetFieldValue<uint[]>(0).SequenceEqual(new uint[] { 1, 2, 3 }));
-            Assert.IsTrue(rdr.GetFieldValue<uint[]>(1).SequenceEqual(new uint[] { 4, 5, 6 }));
+            Assert.That(rdr.GetValue(0).GetType(), Is.EqualTo(typeof(uint[])));
+            Assert.That(rdr.GetValue(1).GetType(), Is.EqualTo(typeof(uint[])));
+            Assert.That(rdr.GetFieldValue<uint[]>(0).SequenceEqual(new uint[] { 1, 2, 3 }), Is.True);
+            Assert.That(rdr.GetFieldValue<uint[]>(1).SequenceEqual(new uint[] { 4, 5, 6 }), Is.True);
         }
 
-        public MiscTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public MiscTypeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

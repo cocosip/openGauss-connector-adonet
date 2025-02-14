@@ -42,7 +42,7 @@ namespace OpenGauss.Tests.Types
             using var cmd = new OpenGaussCommand($"SELECT 'Passed' WHERE @p::text = {query}::text", conn) { Parameters = { new OpenGaussParameter("p", OpenGaussDbType.JsonPath) { Value = expected } } };
             using var rdr = await cmd.ExecuteReaderAsync();
 
-            Assert.True(rdr.Read());
+            Assert.That(rdr.Read(), Is.True);
         }
     }
 }

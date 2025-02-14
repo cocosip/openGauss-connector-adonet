@@ -128,8 +128,8 @@ namespace OpenGauss.Tests
 
             var command = new OpenGaussCommand(@"""FunctionCaseSensitive""", conn) { CommandType = CommandType.StoredProcedure };
             OpenGaussCommandBuilder.DeriveParameters(command);
-            Assert.AreEqual(OpenGaussDbType.Integer, command.Parameters[0].OpenGaussDbType);
-            Assert.AreEqual(OpenGaussDbType.Text, command.Parameters[1].OpenGaussDbType);
+            Assert.That(command.Parameters[0].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Integer));
+            Assert.That(command.Parameters[1].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Text));
         }
 
         [Test]
@@ -142,8 +142,8 @@ namespace OpenGauss.Tests
             await conn.ExecuteNonQueryAsync($@"CREATE OR REPLACE FUNCTION {function}(x int, y int, out sum int, out product int) as 'select $1 + $2, $1 * $2' language 'sql';");
             var command = new OpenGaussCommand(function, conn) { CommandType = CommandType.StoredProcedure };
             OpenGaussCommandBuilder.DeriveParameters(command);
-            Assert.AreEqual("x", command.Parameters[0].ParameterName);
-            Assert.AreEqual("y", command.Parameters[1].ParameterName);
+            Assert.That(command.Parameters[0].ParameterName, Is.EqualTo("x"));
+            Assert.That(command.Parameters[1].ParameterName, Is.EqualTo("y"));
 
             await conn.ExecuteNonQueryAsync($"DROP FUNCTION IF EXISTS {function}(x int, y int, out sum int, out product int)");
         }
@@ -202,8 +202,8 @@ namespace OpenGauss.Tests
 
             var command = new OpenGaussCommand(function, conn) { CommandType = CommandType.StoredProcedure };
             OpenGaussCommandBuilder.DeriveParameters(command);
-            Assert.AreEqual(OpenGaussDbType.Integer, command.Parameters[0].OpenGaussDbType);
-            Assert.AreEqual(OpenGaussDbType.Text, command.Parameters[1].OpenGaussDbType);
+            Assert.That(command.Parameters[0].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Integer));
+            Assert.That(command.Parameters[1].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Text));
         }
 
         [Test, Description("Tests function parameter derivation for quoted functions with dots in the name works")]
@@ -222,8 +222,8 @@ namespace OpenGauss.Tests
 
             var command = new OpenGaussCommand(@"""My.Dotted.Function""", conn) { CommandType = CommandType.StoredProcedure };
             OpenGaussCommandBuilder.DeriveParameters(command);
-            Assert.AreEqual(OpenGaussDbType.Integer, command.Parameters[0].OpenGaussDbType);
-            Assert.AreEqual(OpenGaussDbType.Text, command.Parameters[1].OpenGaussDbType);
+            Assert.That(command.Parameters[0].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Integer));
+            Assert.That(command.Parameters[1].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Text));
         }
 
         [Test, Description("Tests if the right function according to search_path is used in function parameter derivation")]
@@ -448,7 +448,7 @@ $$ LANGUAGE SQL;
             await using var _ = await GetTempTableName(conn, out var table);
             await using var __ = GetTempFunctionName(conn, out var function);
 
-            
+
             await conn.ExecuteNonQueryAsync($@"
                     CREATE TABLE {table} (id serial PRIMARY KEY, t1 text, t2 text);
                     CREATE OR REPLACE FUNCTION {function}() RETURNS SETOF {table} AS $$
@@ -832,7 +832,7 @@ CREATE TEMP TABLE {table} (
             using var cbCommandBuilder = new OpenGaussCommandBuilder(daDataAdapter);
 
             daDataAdapter.UpdateCommand = cbCommandBuilder.GetUpdateCommand();
-            Assert.True(daDataAdapter.UpdateCommand.CommandText.Contains("SET \"cod\" = @p1, \"descr\" = @p2, \"data\" = @p3 WHERE ((\"cod\" = @p4) AND ((@p5 = 1 AND \"descr\" IS NULL) OR (\"descr\" = @p6)) AND ((@p7 = 1 AND \"data\" IS NULL) OR (\"data\" = @p8)))"));
+            Assert.That(daDataAdapter.UpdateCommand.CommandText.Contains("SET \"cod\" = @p1, \"descr\" = @p2, \"data\" = @p3 WHERE ((\"cod\" = @p4) AND ((@p5 = 1 AND \"descr\" IS NULL) OR (\"descr\" = @p6)) AND ((@p7 = 1 AND \"data\" IS NULL) OR (\"data\" = @p8)))"), Is.True);
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/2846")]

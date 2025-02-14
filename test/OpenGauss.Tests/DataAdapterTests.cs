@@ -94,8 +94,8 @@ namespace OpenGauss.Tests
             var dr2 = new OpenGaussCommand($"SELECT field_int2, field_numeric, field_timestamp FROM {table}", conn).ExecuteReader();
             dr2.Read();
 
-            Assert.AreEqual(4, dr2[0]);
-            Assert.AreEqual(7.3000000M, dr2[1]);
+            Assert.That(dr2[0], Is.EqualTo(4));
+            Assert.That(dr2[1], Is.EqualTo(7.3000000M));
             dr2.Close();
         }
 
@@ -139,7 +139,7 @@ namespace OpenGauss.Tests
             var ds2 = ds.GetChanges()!;
             var daupdate = da.Update(ds2);
 
-            Assert.AreEqual(2, daupdate);
+            Assert.That(daupdate, Is.EqualTo(2));
         }
 
         [Test]
@@ -168,7 +168,7 @@ namespace OpenGauss.Tests
             //## update should fail, and make a DBConcurrencyException
             var count = da.Update(ds);
             //## count is 1, even if the isn't updated in the database
-            Assert.AreEqual(0, count);
+            Assert.That(count, Is.EqualTo(0));
         }
 
         [Test]
@@ -182,12 +182,12 @@ namespace OpenGauss.Tests
 
             da.Fill(ds);
 
-            Assert.AreEqual(1, ds.Tables.Count);
-            Assert.AreEqual(4, ds.Tables[0].Columns.Count);
-            Assert.AreEqual("field_serial", ds.Tables[0].Columns[0].ColumnName);
-            Assert.AreEqual("field_int2", ds.Tables[0].Columns[1].ColumnName);
-            Assert.AreEqual("field_timestamp", ds.Tables[0].Columns[2].ColumnName);
-            Assert.AreEqual("field_numeric", ds.Tables[0].Columns[3].ColumnName);
+            Assert.That(ds.Tables.Count, Is.EqualTo(1));
+            Assert.That(ds.Tables[0].Columns.Count, Is.EqualTo(4));
+            Assert.That(ds.Tables[0].Columns[0].ColumnName, Is.EqualTo("field_serial"));
+            Assert.That(ds.Tables[0].Columns[1].ColumnName, Is.EqualTo("field_int2"));
+            Assert.That(ds.Tables[0].Columns[2].ColumnName, Is.EqualTo("field_timestamp"));
+            Assert.That(ds.Tables[0].Columns[3].ColumnName, Is.EqualTo("field_numeric"));
         }
 
         [Test]
@@ -208,33 +208,33 @@ namespace OpenGauss.Tests
             var field_timestamp = ds.Tables[0].Columns[2];
             var field_numeric = ds.Tables[0].Columns[3];
 
-            Assert.IsFalse(field_serial.AllowDBNull);
-            Assert.IsTrue(field_serial.AutoIncrement);
-            Assert.AreEqual("field_serial", field_serial.ColumnName);
-            Assert.AreEqual(typeof(int), field_serial.DataType);
-            Assert.AreEqual(0, field_serial.Ordinal);
-            Assert.IsTrue(field_serial.Unique);
+            Assert.That(field_serial.AllowDBNull, Is.False);
+            Assert.That(field_serial.AutoIncrement, Is.True);
+            Assert.That(field_serial.ColumnName, Is.EqualTo("field_serial"));
+            Assert.That(field_serial.DataType, Is.EqualTo(typeof(int)));
+            Assert.That(field_serial.Ordinal, Is.EqualTo(0));
+            Assert.That(field_serial.Unique, Is.True);
 
-            Assert.IsTrue(field_int2.AllowDBNull);
-            Assert.IsFalse(field_int2.AutoIncrement);
-            Assert.AreEqual("field_int2", field_int2.ColumnName);
-            Assert.AreEqual(typeof(short), field_int2.DataType);
-            Assert.AreEqual(1, field_int2.Ordinal);
-            Assert.IsFalse(field_int2.Unique);
+            Assert.That(field_int2.AllowDBNull, Is.True);
+            Assert.That(field_int2.AutoIncrement, Is.False);
+            Assert.That(field_int2.ColumnName, Is.EqualTo("field_int2"));
+            Assert.That(field_int2.DataType, Is.EqualTo(typeof(short)));
+            Assert.That(field_int2.Ordinal, Is.EqualTo(1));
+            Assert.That(field_int2.Unique, Is.False);
 
-            Assert.IsTrue(field_timestamp.AllowDBNull);
-            Assert.IsFalse(field_timestamp.AutoIncrement);
-            Assert.AreEqual("field_timestamp", field_timestamp.ColumnName);
-            Assert.AreEqual(typeof(DateTime), field_timestamp.DataType);
-            Assert.AreEqual(2, field_timestamp.Ordinal);
-            Assert.IsFalse(field_timestamp.Unique);
+            Assert.That(field_timestamp.AllowDBNull, Is.True);
+            Assert.That(field_timestamp.AutoIncrement, Is.False);
+            Assert.That(field_timestamp.ColumnName, Is.EqualTo("field_timestamp"));
+            Assert.That(field_timestamp.DataType, Is.EqualTo(typeof(DateTime)));
+            Assert.That(field_timestamp.Ordinal, Is.EqualTo(2));
+            Assert.That(field_timestamp.Unique, Is.False);
 
-            Assert.IsTrue(field_numeric.AllowDBNull);
-            Assert.IsFalse(field_numeric.AutoIncrement);
-            Assert.AreEqual("field_numeric", field_numeric.ColumnName);
-            Assert.AreEqual(typeof(decimal), field_numeric.DataType);
-            Assert.AreEqual(3, field_numeric.Ordinal);
-            Assert.IsFalse(field_numeric.Unique);
+            Assert.That(field_numeric.AllowDBNull, Is.True);
+            Assert.That(field_numeric.AutoIncrement, Is.True);
+            Assert.That(field_numeric.ColumnName, Is.EqualTo("field_numeric"));
+            Assert.That(field_numeric.DataType, Is.EqualTo(typeof(decimal)));
+            Assert.That(field_numeric.Ordinal, Is.EqualTo(3));
+            Assert.That(field_numeric.Unique, Is.False);
         }
 
         [Test]
@@ -254,21 +254,21 @@ namespace OpenGauss.Tests
             var field_timestamp = ds.Tables[0].Columns[2];
             var field_numeric = ds.Tables[0].Columns[3];
 
-            Assert.AreEqual("field_serial", field_serial.ColumnName);
-            Assert.AreEqual(typeof(int), field_serial.DataType);
-            Assert.AreEqual(0, field_serial.Ordinal);
+            Assert.That(field_serial.ColumnName, Is.EqualTo("field_serial"));
+            Assert.That(field_serial.DataType, Is.EqualTo(typeof(int)));
+            Assert.That(field_serial.Ordinal, Is.EqualTo(0));
 
-            Assert.AreEqual("field_int2", field_int2.ColumnName);
-            Assert.AreEqual(typeof(short), field_int2.DataType);
-            Assert.AreEqual(1, field_int2.Ordinal);
+            Assert.That(field_int2.ColumnName, Is.EqualTo("field_int2"));
+            Assert.That(field_int2.DataType, Is.EqualTo(typeof(short)));
+            Assert.That(field_int2.Ordinal, Is.EqualTo(1));
 
-            Assert.AreEqual("field_timestamp", field_timestamp.ColumnName);
-            Assert.AreEqual(typeof(DateTime), field_timestamp.DataType);
-            Assert.AreEqual(2, field_timestamp.Ordinal);
+            Assert.That(field_timestamp.ColumnName, Is.EqualTo("field_timestamp"));
+            Assert.That(field_timestamp.DataType, Is.EqualTo(typeof(DateTime)));
+            Assert.That(field_timestamp.Ordinal, Is.EqualTo(2));
 
-            Assert.AreEqual("field_numeric", field_numeric.ColumnName);
-            Assert.AreEqual(typeof(decimal), field_numeric.DataType);
-            Assert.AreEqual(3, field_numeric.Ordinal);
+            Assert.That(field_numeric.ColumnName, Is.EqualTo("field_numeric"));
+            Assert.That(field_numeric.DataType, Is.EqualTo(typeof(decimal)));
+            Assert.That(field_numeric.Ordinal, Is.EqualTo(3));
         }
 
         [Test]
@@ -305,7 +305,7 @@ namespace OpenGauss.Tests
             da.Fill(ds);
 
             var dt = ds.Tables[0];
-            Assert.IsNotNull(dt);
+            Assert.That(dt, Is.Not.Null);
 
             var dr = ds.Tables[0].Rows[ds.Tables[0].Rows.Count - 1];
             dr["field_int2"] = 4;
@@ -317,7 +317,7 @@ namespace OpenGauss.Tests
 
             using var dr2 = new OpenGaussCommand($"SELECT field_int2 FROM {table}", conn).ExecuteReader();
             dr2.Read();
-            Assert.AreEqual(4, dr2["field_int2"]);
+            Assert.That(dr2["field_int2"], Is.EqualTo(4));
         }
 
         [Test]
@@ -346,12 +346,12 @@ namespace OpenGauss.Tests
             var ds = new DataSet();
             var da = new OpenGaussDataAdapter($"select * from {table}", conn);
             var cb = new OpenGaussCommandBuilder(da);
-            Assert.IsNotNull(cb);
+            Assert.That(cb, Is.Not.Null);
 
             da.Fill(ds);
 
             var dt = ds.Tables[0];
-            Assert.IsNotNull(dt);
+            Assert.That(dt, Is.Not.Null);
 
             var dr = ds.Tables[0].Rows[ds.Tables[0].Rows.Count - 1];
 
@@ -364,7 +364,7 @@ namespace OpenGauss.Tests
 
             using var dr2 = new OpenGaussCommand($"select * from {table}", conn).ExecuteReader();
             dr2.Read();
-            Assert.AreEqual(4, dr2["field_int2"]);
+            Assert.That(dr2["field_int2"], Is.EqualTo(4));
         }
 
         [Test]
@@ -377,7 +377,7 @@ namespace OpenGauss.Tests
             var ds = new DataSet();
             var da = new OpenGaussDataAdapter($"select * from {table}", conn);
             var builder = new OpenGaussCommandBuilder(da);
-            Assert.IsNotNull(builder);
+            Assert.That(builder, Is.Not.Null);
 
             da.Fill(ds);
 
@@ -393,7 +393,7 @@ namespace OpenGauss.Tests
 
             using var dr2 = new OpenGaussCommand($"select * from {table}", conn).ExecuteReader();
             dr2.Read();
-            Assert.AreEqual(4, dr2[1]);
+            Assert.That(dr2[1], Is.EqualTo(4));
         }
 
         [Test]
@@ -452,7 +452,7 @@ INSERT INTO {table} (interval) VALUES ('1 hour'::INTERVAL);");
             var da = new OpenGaussDataAdapter();
             da.SelectCommand = command;
             System.Data.Common.DbDataAdapter common = da;
-            Assert.IsNotNull(common.SelectCommand);
+            Assert.That(common.SelectCommand, Is.Not.Null);
         }
 
         [Test, Description("Makes sure that the INSERT/UPDATE/DELETE commands are auto-populated on OpenGaussDataAdapter")]
@@ -535,8 +535,8 @@ INSERT INTO {table} (interval) VALUES ('1 hour'::INTERVAL);");
             dt.Load(dr);
             dr.Close();
 
-            Assert.AreEqual(5, dt.Columns[0].MaxLength);
-            Assert.AreEqual(5, dt.Columns[1].MaxLength);
+            Assert.That(dt.Columns[0].MaxLength, Is.EqualTo(5));
+            Assert.That(dt.Columns[1].MaxLength, Is.EqualTo(5));
         }
 
         public Task<IAsyncDisposable> SetupTempTable(OpenGaussConnection conn, out string table)

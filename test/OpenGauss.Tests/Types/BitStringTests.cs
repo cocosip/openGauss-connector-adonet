@@ -173,7 +173,7 @@ namespace OpenGauss.Tests.Types
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/2766")]
-        [Timeout(3000)]
+        [CancelAfter(3000)]
         public async Task Sequential_read_of_oversized_bit_array()
         {
             using var conn = await OpenConnectionAsync();

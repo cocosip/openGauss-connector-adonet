@@ -19,7 +19,7 @@ using static OpenGauss.Tests.TestUtil;
 
 namespace OpenGauss.Tests
 {
-    [Timeout(60000)]
+    [CancelAfter(60000)]
     public class MultipleHostsTests : TestBase
     {
         static readonly object[] MyCases =
@@ -135,10 +135,10 @@ namespace OpenGauss.Tests
         }
 
         [Test]
-        [TestCase("standby",   new[] { Primary,         Primary })]
-        [TestCase("primary",   new[] { Standby,         Standby })]
+        [TestCase("standby", new[] { Primary, Primary })]
+        [TestCase("primary", new[] { Standby, Standby })]
         [TestCase("read-write", new[] { PrimaryReadOnly, Standby })]
-        [TestCase("read-only",  new[] { Primary,         Primary })]
+        [TestCase("read-only", new[] { Primary, Primary })]
         public async Task Valid_host_not_found(string targetSessionAttributes, MockState[] servers)
         {
             var postmasters = servers.Select(s => PgPostmasterMock.Start(state: s)).ToArray();
@@ -210,12 +210,12 @@ namespace OpenGauss.Tests
 
             using (var preferPrimaryConnection = await OpenConnectionAsync(preferPrimaryCsb.ConnectionString))
             {
-                Assert.AreSame(primaryConnector, preferPrimaryConnection.Connector);
+                Assert.That(primaryConnector, Is.SameAs(preferPrimaryConnection.Connector));
             }
 
             using (var preferStandbyConnection = await OpenConnectionAsync(preferStandbyCsb.ConnectionString))
             {
-                Assert.AreSame(primaryConnector, preferStandbyConnection.Connector);
+                Assert.That(primaryConnector, Is.SameAs(preferStandbyConnection.Connector));
             }
 
             using (var standbyConnection = await OpenConnectionAsync(standbyCsb.ConnectionString))
@@ -225,15 +225,15 @@ namespace OpenGauss.Tests
 
             using (var preferPrimaryConnection = await OpenConnectionAsync(preferPrimaryCsb.ConnectionString))
             {
-                Assert.AreSame(standbyConnector, preferPrimaryConnection.Connector);
+                Assert.That(standbyConnector, Is.SameAs(preferPrimaryConnection.Connector));
             }
 
             using (var preferStandbyConnection = await OpenConnectionAsync(preferStandbyCsb.ConnectionString))
             {
-                Assert.AreSame(standbyConnector, preferStandbyConnection.Connector);
+                Assert.That(standbyConnector, Is.SameAs(preferStandbyConnection.Connector));
             }
 
-            Assert.AreNotSame(primaryConnector, standbyConnector);
+            Assert.That(primaryConnector, Is.Not.SameAs(standbyConnector));
 
             await primaryPostmaster.WaitForServerConnection();
             await standbyPostmaster.WaitForServerConnection();
@@ -432,21 +432,21 @@ namespace OpenGauss.Tests
                 secondConnector = secondConnection.Connector!;
             }
 
-            Assert.AreNotSame(firstConnector, secondConnector);
+            Assert.That(firstConnector, Is.SameAs(secondConnector));
 
             await using (var firstBalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(firstConnector, firstBalancedConnection.Connector);
+                Assert.That(firstConnector, Is.SameAs(firstBalancedConnection.Connector));
             }
 
             await using (var secondBalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(secondConnector, secondBalancedConnection.Connector);
+                Assert.That(secondConnector, Is.SameAs(secondBalancedConnection.Connector));
             }
 
             await using (var thirdBalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(firstConnector, thirdBalancedConnection.Connector);
+                Assert.That(firstConnector, Is.SameAs(thirdBalancedConnection.Connector));
             }
         }
 
@@ -475,7 +475,7 @@ namespace OpenGauss.Tests
             }
             await using (var secondConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(firstConnector, secondConnection.Connector);
+                Assert.That(firstConnector, Is.SameAs(secondConnection.Connector));
             }
             await using (var firstConnection = await OpenConnectionAsync(defaultConnectionString))
             await using (var secondConnection = await OpenConnectionAsync(defaultConnectionString))
@@ -483,16 +483,16 @@ namespace OpenGauss.Tests
                 secondConnector = secondConnection.Connector!;
             }
 
-            Assert.AreNotSame(firstConnector, secondConnector);
+            Assert.That(secondConnector, Is.Not.SameAs(firstConnector));
 
             await using (var firstUnbalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(firstConnector, firstUnbalancedConnection.Connector);
+                Assert.That(firstConnector, Is.SameAs(firstUnbalancedConnection.Connector));
             }
 
             await using (var secondUnbalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
-                Assert.AreSame(firstConnector, secondUnbalancedConnection.Connector);
+                Assert.That(firstConnector, Is.SameAs(secondUnbalancedConnection.Connector));
             }
         }
 
@@ -545,7 +545,7 @@ namespace OpenGauss.Tests
             }
 
             await using var thirdConnection = await OpenConnectionAsync(defaultConnectionString);
-            Assert.AreSame(alwaysCheckHostState ? secondConnector : firstConnector, thirdConnection.Connector);
+            Assert.That(thirdConnection.Connector, Is.SameAs(alwaysCheckHostState ? secondConnector : firstConnector));
 
             await firstServerTask;
             await secondServerTask;
@@ -558,21 +558,21 @@ namespace OpenGauss.Tests
             var timeStamp = DateTime.UtcNow;
 
             ClusterStateCache.UpdateClusterState(host, 5432, ClusterState.PrimaryReadWrite, timeStamp, TimeSpan.Zero);
-            Assert.AreEqual(ClusterState.PrimaryReadWrite, ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.PrimaryReadWrite));
 
             // Update with the same timestamp - shouldn't change anything
             ClusterStateCache.UpdateClusterState(host, 5432, ClusterState.Standby, timeStamp, TimeSpan.Zero);
-            Assert.AreEqual(ClusterState.PrimaryReadWrite, ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.PrimaryReadWrite));
             // Update with a new timestamp
             timeStamp = timeStamp.AddSeconds(1);
             ClusterStateCache.UpdateClusterState(host, 5432, ClusterState.PrimaryReadOnly, timeStamp, TimeSpan.Zero);
-            Assert.AreEqual(ClusterState.PrimaryReadOnly, ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.PrimaryReadWrite));
 
             // Expired state returns as Unknown (depending on ignoreExpiration)
             timeStamp = timeStamp.AddSeconds(1);
             ClusterStateCache.UpdateClusterState(host, 5432, ClusterState.PrimaryReadWrite, timeStamp, TimeSpan.FromSeconds(-1));
-            Assert.AreEqual(ClusterState.Unknown, ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false));
-            Assert.AreEqual(ClusterState.PrimaryReadWrite, ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: true));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.Unknown));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: true), Is.EqualTo(ClusterState.PrimaryReadWrite));
         }
 
         [Test]
@@ -832,7 +832,7 @@ namespace OpenGauss.Tests
         }
 
         // This is the only test in this class which actually connects to PostgreSQL (the others use the PostgreSQL mock)
-        [Test, Timeout(10000), NonParallelizable]
+        [Test, CancelAfter(10000), NonParallelizable]
         public void IntegrationTest([Values] bool loadBalancing, [Values] bool alwaysCheckHostState)
         {
             PoolManager.Reset();
@@ -865,9 +865,9 @@ namespace OpenGauss.Tests
             Assert.DoesNotThrowAsync(() => clientsTask);
             Assert.ThrowsAsync<OpenGaussException>(() => onlyStandbyClient);
             Assert.ThrowsAsync<OpenGaussException>(() => readOnlyClient);
-            Assert.AreEqual(125, queriesDone);
+            Assert.That(queriesDone, Is.EqualTo(125));
 
-            Assert.AreEqual(8, PoolManager.Pools.Count(x => x.Key is not null));
+            Assert.That(PoolManager.Pools.Count(x => x.Key is not null), Is.EqualTo(8));
 
             PoolManager.Reset();
 

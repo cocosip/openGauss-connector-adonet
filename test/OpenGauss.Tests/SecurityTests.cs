@@ -89,7 +89,8 @@ namespace OpenGauss.Tests
             if (username == null)
                 throw new Exception("Could find username");
 
-            var connString = new OpenGaussConnectionStringBuilder(ConnectionString) {
+            var connString = new OpenGaussConnectionStringBuilder(ConnectionString)
+            {
                 IntegratedSecurity = true,
                 Username = username,
                 Password = null
@@ -157,7 +158,7 @@ namespace OpenGauss.Tests
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/1718")]
-        [Timeout(12000)]
+        [CancelAfter(12000)]
         public void Bug1718()
         {
             var csb = new OpenGaussConnectionStringBuilder(ConnectionString)
@@ -176,7 +177,7 @@ namespace OpenGauss.Tests
         }
 
         [Test]
-        [Timeout(2000)]
+        [CancelAfter(2000)]
         public void ScramPlus()
         {
             var csb = new OpenGaussConnectionStringBuilder(ConnectionString)
@@ -223,7 +224,7 @@ namespace OpenGauss.Tests
             try
             {
                 await using var conn = await OpenConnectionAsync(csb);
-                Assert.IsTrue(conn.IsSecure);
+                Assert.That(conn.IsSecure, Is.True);
             }
             catch (Exception e) when (!TestUtil.IsOnBuildServer)
             {
@@ -266,7 +267,7 @@ namespace OpenGauss.Tests
             try
             {
                 await using var conn = await OpenConnectionAsync(csb);
-                Assert.IsFalse(conn.IsSecure);
+                Assert.That(conn.IsSecure, Is.False);
             }
             catch (Exception e) when (!TestUtil.IsOnBuildServer)
             {

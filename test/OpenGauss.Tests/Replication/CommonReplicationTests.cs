@@ -263,7 +263,7 @@ namespace OpenGauss.Tests.Replication
 
                     streamingCts.Cancel();
 
-                    Assert.That(async () => { while (await replicationEnumerator.MoveNextAsync()){} }, Throws.Exception.AssignableTo<OperationCanceledException>()
+                    Assert.That(async () => { while (await replicationEnumerator.MoveNextAsync()) { } }, Throws.Exception.AssignableTo<OperationCanceledException>()
                         .With.InnerException.InstanceOf<PostgresException>()
                         .And.InnerException.Property(nameof(PostgresException.SqlState))
                         .EqualTo(PostgresErrorCodes.QueryCanceled));
@@ -441,7 +441,7 @@ namespace OpenGauss.Tests.Replication
                         // OpenGaussLogicalReplicationConnection
                         // Begin Transaction, Insert, Commit Transaction
                         for (var i = 0; i < 3; i++)
-                            Assert.True(await messages.MoveNextAsync());
+                            Assert.That(await messages.MoveNextAsync(), Is.True);
                         return messages.Current.Lsn;
 
                     }

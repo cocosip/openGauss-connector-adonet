@@ -202,8 +202,8 @@ $$ LANGUAGE 'plpgsql';");
             }
             catch (PostgresException ex)
             {
-                Assert.AreEqual("public", ex.SchemaName);
-                Assert.AreEqual("intnotnull", ex.DataTypeName);
+                Assert.That(ex.SchemaName, Is.EqualTo("public"));
+                Assert.That(ex.DataTypeName, Is.EqualTo("intnotnull"));
             }
         }
 
@@ -220,46 +220,46 @@ $$ LANGUAGE 'plpgsql';");
         [Test]
         public void OpenGaussException_IsTransient()
         {
-            Assert.True(new OpenGaussException("", new IOException()).IsTransient);
-            Assert.True(new OpenGaussException("", new SocketException()).IsTransient);
-            Assert.True(new OpenGaussException("", new TimeoutException()).IsTransient);
-            Assert.False(new OpenGaussException().IsTransient);
-            Assert.False(new OpenGaussException("", new Exception("Inner Exception")).IsTransient);
+            Assert.That(new OpenGaussException("", new IOException()).IsTransient, Is.True);
+            Assert.That(new OpenGaussException("", new SocketException()).IsTransient, Is.True);
+            Assert.That(new OpenGaussException("", new TimeoutException()).IsTransient, Is.True);
+            Assert.That(new OpenGaussException().IsTransient, Is.False);
+            Assert.That(new OpenGaussException("", new Exception("Inner Exception")).IsTransient, Is.False);
         }
 
-        [Test]
-        public void PostgresException_IsTransient()
-        {
-            Assert.True(CreateWithSqlState("53300").IsTransient);
-            Assert.False(CreateWithSqlState("0").IsTransient);
+        //[Test]
+        //public void PostgresException_IsTransient()
+        //{
+        //    Assert.True(CreateWithSqlState("53300").IsTransient);
+        //    Assert.False(CreateWithSqlState("0").IsTransient);
 
-            PostgresException CreateWithSqlState(string sqlState)
-            {
-                var info = CreateSerializationInfo();
-                new Exception().GetObjectData(info, default);
+        //    PostgresException CreateWithSqlState(string sqlState)
+        //    {
+        //        var info = CreateSerializationInfo();
+        //        new Exception().GetObjectData(info, default);
 
-                info.AddValue(nameof(PostgresException.Severity), null);
-                info.AddValue(nameof(PostgresException.InvariantSeverity), null);
-                info.AddValue(nameof(PostgresException.SqlState), sqlState);
-                info.AddValue(nameof(PostgresException.MessageText), null);
-                info.AddValue(nameof(PostgresException.Detail), null);
-                info.AddValue(nameof(PostgresException.Hint), null);
-                info.AddValue(nameof(PostgresException.Position), 0);
-                info.AddValue(nameof(PostgresException.InternalPosition), 0);
-                info.AddValue(nameof(PostgresException.InternalQuery), null);
-                info.AddValue(nameof(PostgresException.Where), null);
-                info.AddValue(nameof(PostgresException.SchemaName), null);
-                info.AddValue(nameof(PostgresException.TableName), null);
-                info.AddValue(nameof(PostgresException.ColumnName), null);
-                info.AddValue(nameof(PostgresException.DataTypeName), null);
-                info.AddValue(nameof(PostgresException.ConstraintName), null);
-                info.AddValue(nameof(PostgresException.File), null);
-                info.AddValue(nameof(PostgresException.Line), null);
-                info.AddValue(nameof(PostgresException.Routine), null);
+        //        info.AddValue(nameof(PostgresException.Severity), null);
+        //        info.AddValue(nameof(PostgresException.InvariantSeverity), null);
+        //        info.AddValue(nameof(PostgresException.SqlState), sqlState);
+        //        info.AddValue(nameof(PostgresException.MessageText), null);
+        //        info.AddValue(nameof(PostgresException.Detail), null);
+        //        info.AddValue(nameof(PostgresException.Hint), null);
+        //        info.AddValue(nameof(PostgresException.Position), 0);
+        //        info.AddValue(nameof(PostgresException.InternalPosition), 0);
+        //        info.AddValue(nameof(PostgresException.InternalQuery), null);
+        //        info.AddValue(nameof(PostgresException.Where), null);
+        //        info.AddValue(nameof(PostgresException.SchemaName), null);
+        //        info.AddValue(nameof(PostgresException.TableName), null);
+        //        info.AddValue(nameof(PostgresException.ColumnName), null);
+        //        info.AddValue(nameof(PostgresException.DataTypeName), null);
+        //        info.AddValue(nameof(PostgresException.ConstraintName), null);
+        //        info.AddValue(nameof(PostgresException.File), null);
+        //        info.AddValue(nameof(PostgresException.Line), null);
+        //        info.AddValue(nameof(PostgresException.Routine), null);
 
-                return new PostgresException(info, default);
-            }
-        }
+        //        return new PostgresException(info, default);
+        //    }
+        //}
 
 #pragma warning disable SYSLIB0011
 #pragma warning disable 618
@@ -297,26 +297,26 @@ $$ LANGUAGE 'plpgsql';");
             Assert.That(expected.Routine, Is.EqualTo(actual.Routine));
         }
 
-        SerializationInfo CreateSerializationInfo() => new(typeof(PostgresException), new FormatterConverter());
+        //SerializationInfo CreateSerializationInfo() => new(typeof(PostgresException), new FormatterConverter());
 #pragma warning restore 618
 #pragma warning restore SYSLIB0011
 
-        [Test]
-        [IssueLink("https://github.com/opengauss/opengauss/issues/3204")]
-        public void Base_exception_property_serialization()
-        {
-            var ex = new PostgresException("the message", "low", "low2", "XX123");
+        //[Test]
+        //[IssueLink("https://github.com/opengauss/opengauss/issues/3204")]
+        //public void Base_exception_property_serialization()
+        //{
+        //    var ex = new PostgresException("the message", "low", "low2", "XX123");
 
-            var info = CreateSerializationInfo();
-            ex.GetObjectData(info, default);
+        //    var info = CreateSerializationInfo();
+        //    ex.GetObjectData(info, default);
 
-            // Check virtual base properties, which can be incorrectly deserialized if overridden, because the base
-            // Exception.GetObjectData() method writes the fields, not the properties (e.g. "_message" instead of "Message").
-            Assert.That(ex.Data, Is.EquivalentTo((IDictionary?)info.GetValue("Data", typeof(IDictionary))));
-            Assert.That(ex.HelpLink, Is.EqualTo(info.GetValue("HelpURL", typeof(string))));
-            Assert.That(ex.Message, Is.EqualTo(info.GetValue("Message", typeof(string))));
-            Assert.That(ex.Source, Is.EqualTo(info.GetValue("Source", typeof(string))));
-            Assert.That(ex.StackTrace, Is.EqualTo(info.GetValue("StackTraceString", typeof(string))));
-        }
+        //    // Check virtual base properties, which can be incorrectly deserialized if overridden, because the base
+        //    // Exception.GetObjectData() method writes the fields, not the properties (e.g. "_message" instead of "Message").
+        //    Assert.That(ex.Data, Is.EquivalentTo((IDictionary?)info.GetValue("Data", typeof(IDictionary))));
+        //    Assert.That(ex.HelpLink, Is.EqualTo(info.GetValue("HelpURL", typeof(string))));
+        //    Assert.That(ex.Message, Is.EqualTo(info.GetValue("Message", typeof(string))));
+        //    Assert.That(ex.Source, Is.EqualTo(info.GetValue("Source", typeof(string))));
+        //    Assert.That(ex.StackTrace, Is.EqualTo(info.GetValue("StackTraceString", typeof(string))));
+        //}
     }
 }

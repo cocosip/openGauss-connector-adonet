@@ -23,7 +23,7 @@ namespace OpenGauss.Tests
     public class ConnectionTests : MultiplexingTestBase
     {
         [Test, Description("Makes sure the connection goes through the proper state lifecycle")]
-        //[Timeout(5000)]
+        //[CancelAfter(5000)]
         public async Task Basic_lifecycle()
         {
             using var conn = new OpenGaussConnection(ConnectionString);
@@ -114,7 +114,7 @@ namespace OpenGauss.Tests
             Assert.That(conn.State, Is.EqualTo(ConnectionState.Closed));
             Assert.That(eventClosed, Is.True);
             Assert.That(conn.Connector is null);
-            Assert.AreEqual(0, conn.Pool.Statistics.Total);
+            Assert.That(conn.Pool.Statistics.Total, Is.EqualTo(0));
 
             if (openFromClose)
             {
@@ -126,8 +126,8 @@ namespace OpenGauss.Tests
             }
 
             Assert.DoesNotThrowAsync(conn.OpenAsync);
-            Assert.AreEqual(1, await conn.ExecuteScalarAsync("SELECT 1"));
-            Assert.AreEqual(1, conn.Pool.Statistics.Total);
+            Assert.That(await conn.ExecuteScalarAsync("SELECT 1"), Is.EqualTo(1));
+            Assert.That(conn.Pool.Statistics.Total, Is.EqualTo(1));
             Assert.DoesNotThrowAsync(conn.CloseAsync);
         }
 
@@ -197,7 +197,8 @@ namespace OpenGauss.Tests
         {
             var connString = new OpenGaussConnectionStringBuilder(ConnectionString)
             {
-                Username = "unknown", Pooling = false
+                Username = "unknown",
+                Pooling = false
             }.ToString();
             using var conn = new OpenGaussConnection(connString);
             Assert.That(conn.Open, Throws.Exception
@@ -241,7 +242,7 @@ namespace OpenGauss.Tests
             using (var conn = new OpenGaussConnection(builder.ConnectionString) { ProvidePasswordCallback = ProvidePasswordCallback })
             {
                 conn.Open();
-                Assert.True(getPasswordDelegateWasCalled, "ProvidePasswordCallback delegate not used");
+                Assert.That(getPasswordDelegateWasCalled, Is.True, "ProvidePasswordCallback delegate not used");
 
                 // Do this again, since with multiplexing the very first connection attempt is done via
                 // the non-multiplexing path, to surface any exceptions.
@@ -250,7 +251,7 @@ namespace OpenGauss.Tests
                 getPasswordDelegateWasCalled = false;
                 conn.Open();
                 Assert.That(await conn.ExecuteScalarAsync("SELECT 1"), Is.EqualTo(1));
-                Assert.True(getPasswordDelegateWasCalled, "ProvidePasswordCallback delegate not used");
+                Assert.That(getPasswordDelegateWasCalled, Is.True, "ProvidePasswordCallback delegate not used");
             }
 
             string ProvidePasswordCallback(string host, int port, string database, string username)
@@ -323,10 +324,10 @@ namespace OpenGauss.Tests
             using (var conn = new OpenGaussConnection(builder.ConnectionString) { ProvidePasswordCallback = ProvidePasswordCallback })
             {
                 conn.Open();
-                Assert.AreEqual(builder.Host, receivedHost);
-                Assert.AreEqual(builder.Port, receivedPort);
-                Assert.AreEqual(builder.Database, receivedDatabase);
-                Assert.AreEqual(builder.Username, receivedUsername);
+                Assert.That(builder.Host, Is.EqualTo(receivedHost));
+                Assert.That(builder.Port, Is.EqualTo(receivedPort));
+                Assert.That(builder.Database, Is.EqualTo(receivedDatabase));
+                Assert.That(builder.Username, Is.EqualTo(receivedUsername));
             }
 
             string ProvidePasswordCallback(string host, int port, string database, string username)
@@ -398,7 +399,7 @@ namespace OpenGauss.Tests
         }
 
         [Test]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public void Open_timeout_unknown_ip([Values(true, false)] bool async)
         {
             var unknownIp = Environment.GetEnvironmentVariable("NPGSQL_UNKNOWN_IP");
@@ -436,7 +437,7 @@ namespace OpenGauss.Tests
         }
 
         [Test]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public void Connect_timeout_cancel()
         {
             var unknownIp = Environment.GetEnvironmentVariable("NPGSQL_UNKNOWN_IP");
@@ -544,15 +545,15 @@ namespace OpenGauss.Tests
 
         #region ConnectionString - Host
 
-        [TestCase("127.0.0.1", ExpectedResult = new []{"tcp://127.0.0.1:5432"})]
-        [TestCase("127.0.0.1:5432", ExpectedResult = new []{"tcp://127.0.0.1:5432"})]
-        [TestCase("::1", ExpectedResult = new []{"tcp://::1:5432"})]
-        [TestCase("[::1]", ExpectedResult = new []{"tcp://[::1]:5432"})]
-        [TestCase("[::1]:5432", ExpectedResult = new []{"tcp://[::1]:5432"})]
-        [TestCase("localhost", ExpectedResult = new []{"tcp://localhost:5432"})]
-        [TestCase("localhost:5432", ExpectedResult = new []{"tcp://localhost:5432"})]
+        [TestCase("127.0.0.1", ExpectedResult = new[] { "tcp://127.0.0.1:5432" })]
+        [TestCase("127.0.0.1:5432", ExpectedResult = new[] { "tcp://127.0.0.1:5432" })]
+        [TestCase("::1", ExpectedResult = new[] { "tcp://::1:5432" })]
+        [TestCase("[::1]", ExpectedResult = new[] { "tcp://[::1]:5432" })]
+        [TestCase("[::1]:5432", ExpectedResult = new[] { "tcp://[::1]:5432" })]
+        [TestCase("localhost", ExpectedResult = new[] { "tcp://localhost:5432" })]
+        [TestCase("localhost:5432", ExpectedResult = new[] { "tcp://localhost:5432" })]
         [TestCase("127.0.0.1,127.0.0.1:5432,::1,[::1],[::1]:5432,localhost,localhost:5432",
-            ExpectedResult = new []
+            ExpectedResult = new[]
             {
                 "tcp://127.0.0.1:5432",
                 "tcp://127.0.0.1:5432",
@@ -889,7 +890,7 @@ namespace OpenGauss.Tests
         #endregion
 
         [Test, Description("Tests closing a connector while a reader is open")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Close_during_read([Values(PooledOrNot.Pooled, PooledOrNot.Unpooled)] PooledOrNot pooled)
         {
             var csb = new OpenGaussConnectionStringBuilder(ConnectionString);
@@ -963,7 +964,7 @@ namespace OpenGauss.Tests
             var cs1 = csb1.ToString();
             var csb2 = new OpenGaussConnectionStringBuilder(cs1);
             var cs2 = csb2.ToString();
-            Assert.IsTrue(cs1 == cs2);
+            Assert.That(cs1 == cs2, Is.True);
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/pull/164")]
@@ -971,7 +972,7 @@ namespace OpenGauss.Tests
         {
             var c = new OpenGaussConnection();
             c.Dispose();
-            Assert.AreEqual(ConnectionState.Closed, c.State);
+            Assert.That(c.State, Is.EqualTo(ConnectionState.Closed));
         }
 
         [Test]
@@ -1655,7 +1656,7 @@ CREATE TABLE record ()");
 
         [Test, Description("Simulates a timeout during the authentication phase")]
         [IssueLink("https://github.com/opengauss/opengauss/issues/3227")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Timeout_during_authentication()
         {
             var builder = new OpenGaussConnectionStringBuilder(ConnectionString) { Timeout = 1 };
@@ -1689,7 +1690,7 @@ CREATE TABLE record ()");
             Assert.DoesNotThrow(conn.Open);
 
             var rowsCount = (long)(await conn.ExecuteScalarAsync($"SELECT COUNT(*) FROM \"{table}\""))!;
-            Assert.AreEqual(1, rowsCount);
+            Assert.That(rowsCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -1710,7 +1711,7 @@ CREATE TABLE record ()");
             Assert.DoesNotThrowAsync(conn.OpenAsync);
 
             var rowsCount = (long)(await conn.ExecuteScalarAsync($"SELECT COUNT(*) FROM \"{table}\""))!;
-            Assert.AreEqual(1, rowsCount);
+            Assert.That(rowsCount, Is.EqualTo(1));
         }
 
         [Test]
@@ -1783,6 +1784,6 @@ CREATE TABLE record ()");
             Assert.DoesNotThrowAsync(() => conn.ExecuteNonQueryAsync("SELECT 1"));
         }
 
-        public ConnectionTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public ConnectionTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

@@ -8,7 +8,7 @@ using OpenGauss.NET;
 
 namespace OpenGauss.Tests
 {
-// This test class has global effects on case sensitive matching in param collection.
+    // This test class has global effects on case sensitive matching in param collection.
     [NonParallelizable]
     [TestFixture(CompatMode.OnePass)]
     [TestFixture(CompatMode.TwoPass)]
@@ -36,13 +36,13 @@ namespace OpenGauss.Tests
             var c1 = new OpenGaussCommand();
             var c2 = new OpenGaussCommand();
             c1.Parameters.Add(p);
-            Assert.AreEqual(1, c1.Parameters.Count);
-            Assert.AreEqual(0, c2.Parameters.Count);
+            Assert.That(c1.Parameters.Count, Is.EqualTo(1));
+            Assert.That(c2.Parameters.Count, Is.EqualTo(0));
             c1.Parameters.Clear();
-            Assert.AreEqual(0, c1.Parameters.Count);
+            Assert.That(c1.Parameters.Count, Is.EqualTo(0));
             c2.Parameters.Add(p);
-            Assert.AreEqual(0, c1.Parameters.Count);
-            Assert.AreEqual(1, c2.Parameters.Count);
+            Assert.That(c1.Parameters.Count, Is.EqualTo(0));
+            Assert.That(c2.Parameters.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -60,7 +60,7 @@ namespace OpenGauss.Tests
             }
 
             // Make sure hash lookup is generated.
-            Assert.AreEqual(command.Parameters["p03"].ParameterName, "p03");
+            Assert.That(command.Parameters["p03"].ParameterName, Is.EqualTo("p03"));
 
             // Rename the target parameter.
             command.Parameters["p03"].ParameterName = "a_new_name";
@@ -86,7 +86,7 @@ namespace OpenGauss.Tests
             }
 
             // Make sure lookup is generated.
-            Assert.AreEqual(command.Parameters["p02"].ParameterName, "p02");
+            Assert.That(command.Parameters["p02"].ParameterName, Is.EqualTo("p02"));
 
             // Add uppercased version causing a list to be created.
             command.Parameters.AddWithValue("P02", OpenGaussDbType.Text, "String parameter value 2");
@@ -95,10 +95,10 @@ namespace OpenGauss.Tests
             command.Parameters.Remove(command.Parameters["p02"]);
 
             // Test whether we can still find the last added parameter, and if its index is correctly shifted in the lookup.
-            Assert.IsTrue(command.Parameters.IndexOf("p02") == count - 1);
-            Assert.IsTrue(command.Parameters.IndexOf("P02") == count - 1);
+            Assert.That(command.Parameters.IndexOf("p02") == count - 1, Is.True);
+            Assert.That(command.Parameters.IndexOf("P02") == count - 1, Is.True);
             // And finally test whether other parameters were also correctly shifted.
-            Assert.IsTrue(command.Parameters.IndexOf("p03") == 1);
+            Assert.That(command.Parameters.IndexOf("p03") == 1, Is.True);
         }
 
         [Test]
@@ -116,8 +116,8 @@ namespace OpenGauss.Tests
             command.Parameters.Remove(command.Parameters["p02"]);
 
             // Make sure we cannot find it, also not case insensitively.
-            Assert.IsTrue(command.Parameters.IndexOf("p02") == -1);
-            Assert.IsTrue(command.Parameters.IndexOf("P02") == -1);
+            Assert.That(command.Parameters.IndexOf("p02") == -1, Is.True);
+            Assert.That(command.Parameters.IndexOf("P02") == -1, Is.True);
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace OpenGauss.Tests
             }
 
             // Make sure lookup is generated.
-            Assert.AreEqual(command.Parameters["parameter02"].ParameterName, "parameter02");
+            Assert.That(command.Parameters["parameter02"].ParameterName, Is.EqualTo("parameter02"));
 
             // Add uppercased version.
             command.Parameters.AddWithValue("Parameter02", OpenGaussDbType.Text, "String parameter value 2");
@@ -166,14 +166,14 @@ namespace OpenGauss.Tests
             command.Parameters.Insert(0, new OpenGaussParameter("ParameteR02", OpenGaussDbType.Text) { Value = "String parameter value 2" });
 
             // Try to find the exact index.
-            Assert.IsTrue(command.Parameters.IndexOf("parameter02") == 2);
-            Assert.IsTrue(command.Parameters.IndexOf("Parameter02") == command.Parameters.Count - 1);
-            Assert.IsTrue(command.Parameters.IndexOf("ParameteR02") == 0);
+            Assert.That(command.Parameters.IndexOf("parameter02") == 2, Is.True);
+            Assert.That(command.Parameters.IndexOf("Parameter02") == command.Parameters.Count - 1, Is.True);
+            Assert.That(command.Parameters.IndexOf("ParameteR02") == 0, Is.True);
             // This name does not exist so we expect the first case insensitive match to be returned.
-            Assert.IsTrue(command.Parameters.IndexOf("ParaMeteR02") == 0);
+            Assert.That(command.Parameters.IndexOf("ParaMeteR02") == 0, Is.True);
 
             // And finally test whether other parameters were also correctly shifted.
-            Assert.IsTrue(command.Parameters.IndexOf("parameter03") == 3);
+            Assert.That(command.Parameters.IndexOf("parameter03") == 3, Is.True);
         }
 
         [Test]
@@ -295,8 +295,8 @@ namespace OpenGauss.Tests
             param.ParameterName = null;
 
             // These should not throw exceptions
-            Assert.AreEqual(0, command.Parameters.IndexOf(param.ParameterName));
-            Assert.AreEqual(OpenGaussParameter.PositionalName, param.ParameterName);
+            Assert.That(command.Parameters.IndexOf(param.ParameterName), Is.EqualTo(0));
+            Assert.That(param.ParameterName, Is.EqualTo(OpenGaussParameter.PositionalName));
         }
 
         public OpenGaussParameterCollectionTests(CompatMode compatMode)

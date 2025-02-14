@@ -27,27 +27,27 @@ namespace OpenGauss.Tests.Types
 
         [Test]
         public void Read_class_with_property() =>
-            Read<ClassWithProperty>((execute, expected) => Assert.AreEqual(expected.Value, execute().Value));
+            Read<ClassWithProperty>((execute, expected) => Assert.That(execute().Value, Is.EqualTo(expected.Value)));
 
         [Test]
         public void Read_class_with_field() =>
-            Read<ClassWithField>((execute, expected) => Assert.AreEqual(expected.Value, execute().Value));
+            Read<ClassWithField>((execute, expected) => Assert.That(execute().Value, Is.EqualTo(expected.Value)));
 
         [Test]
         public void Read_struct_with_property() =>
-            Read<StructWithProperty>((execute, expected) => Assert.AreEqual(expected.Value, execute().Value));
+            Read<StructWithProperty>((execute, expected) => Assert.That(execute().Value, Is.EqualTo(expected.Value)));
 
         [Test]
         public void Read_struct_with_field() =>
-            Read<StructWithField>((execute, expected) => Assert.AreEqual(expected.Value, execute().Value));
+            Read<StructWithField>((execute, expected) => Assert.That(execute().Value, Is.EqualTo(expected.Value)));
 
         [Test]
         public void Read_type_with_two_properties() =>
             Read<TypeWithTwoProperties>((execute, expected) =>
             {
                 var actual = execute();
-                Assert.AreEqual(expected.IntValue, actual.IntValue);
-                Assert.AreEqual(expected.StringValue, actual.StringValue);
+                Assert.That(actual.IntValue, Is.EqualTo(expected.IntValue));
+                Assert.That(actual.StringValue, Is.EqualTo(expected.StringValue));
             });
 
         [Test]
@@ -55,8 +55,8 @@ namespace OpenGauss.Tests.Types
             Read<TypeWithTwoPropertiesReversed>((execute, expected) =>
             {
                 var actual = execute();
-                Assert.AreEqual(expected.IntValue, actual.IntValue);
-                Assert.AreEqual(expected.StringValue, actual.StringValue);
+                Assert.That(actual.IntValue, Is.EqualTo(expected.IntValue));
+                Assert.That(actual.StringValue, Is.EqualTo(expected.StringValue));
             });
 
         [Test]

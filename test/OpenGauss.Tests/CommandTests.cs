@@ -138,7 +138,7 @@ namespace OpenGauss.Tests
 
         [Test, Description("Checks that CommandTimeout gets enforced as a socket timeout")]
         [IssueLink("https://github.com/opengauss/opengauss/issues/327")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Timeout()
         {
             if (IsMultiplexing)
@@ -157,7 +157,7 @@ namespace OpenGauss.Tests
 
         [Test, Description("Times out an async operation, testing that cancellation occurs successfully")]
         [IssueLink("https://github.com/opengauss/opengauss/issues/607")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Timeout_async_soft()
         {
             if (IsMultiplexing)
@@ -174,7 +174,7 @@ namespace OpenGauss.Tests
 
         [Test, Description("Times out an async operation, with unsuccessful cancellation (socket break)")]
         [IssueLink("https://github.com/opengauss/opengauss/issues/607")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Timeout_async_hard()
         {
             if (IsMultiplexing)
@@ -246,7 +246,7 @@ namespace OpenGauss.Tests
         }
 
         [Test]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Prepare_timeout_hard([Values] SyncOrAsync async)
         {
             if (IsMultiplexing)
@@ -282,7 +282,7 @@ namespace OpenGauss.Tests
         #region Cancel
 
         [Test, Description("Basic cancellation scenario")]
-        [Timeout(6000)]
+        [CancelAfter(6000)]
         public async Task Cancel()
         {
             if (IsMultiplexing)
@@ -373,7 +373,7 @@ namespace OpenGauss.Tests
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/3466")]
-        [Timeout(6000)]
+        [CancelAfter(6000)]
         public async Task Bug3466([Values(false, true)] bool isBroken)
         {
             if (IsMultiplexing)
@@ -431,7 +431,7 @@ namespace OpenGauss.Tests
 
         [Test, Description("Check that cancel only affects the command on which its was invoked")]
         [Explicit("Timing-sensitive")]
-        [Timeout(3000)]
+        [CancelAfter(3000)]
         public async Task Cancel_cross_command()
         {
             using var conn = await OpenConnectionAsync();
@@ -468,7 +468,7 @@ namespace OpenGauss.Tests
 
             while (dr.Read())
                 i++;
-            Assert.AreEqual(3, i);
+            Assert.That(i, Is.EqualTo(3));
             dr.Close();
 
             i = 0;
@@ -476,7 +476,7 @@ namespace OpenGauss.Tests
             var dr2 = command.ExecuteReader();
             while (dr2.Read())
                 i++;
-            Assert.AreEqual(1, i);
+            Assert.That(i, Is.EqualTo(1));
             dr2.Close();
 
             command.CommandText = "close te;";
@@ -492,7 +492,7 @@ namespace OpenGauss.Tests
             command.ExecuteNonQuery();
             command.CommandText = "MOVE FORWARD ALL IN curs";
             var count = command.ExecuteNonQuery();
-            Assert.AreEqual(3, count);
+            Assert.That(count, Is.EqualTo(3));
         }
 
         #endregion
@@ -505,7 +505,7 @@ namespace OpenGauss.Tests
             using var conn = await OpenConnectionAsync();
             using (var cmd = new OpenGaussCommand("SELECT 1", conn))
             using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                while (reader.Read()) {}
+                while (reader.Read()) { }
             Assert.That(conn.State, Is.EqualTo(ConnectionState.Closed));
         }
 
@@ -692,20 +692,20 @@ namespace OpenGauss.Tests
             command.Parameters.Add(new OpenGaussParameter("Parameter4", DbType.DateTime));
 
             var idbPrmtr = command.Parameters["Parameter1"];
-            Assert.IsNotNull(idbPrmtr);
+            Assert.That(idbPrmtr, Is.Not.Null);
             command.Parameters[0].Value = 1;
 
             // Get by indexers.
 
-            Assert.AreEqual(":Parameter1", command.Parameters["Parameter1"].ParameterName);
-            Assert.AreEqual(":Parameter2", command.Parameters["Parameter2"].ParameterName);
-            Assert.AreEqual(":Parameter3", command.Parameters["Parameter3"].ParameterName);
-            Assert.AreEqual("Parameter4", command.Parameters["Parameter4"].ParameterName); //Should this work?
+            Assert.That(command.Parameters["Parameter1"].ParameterName, Is.EqualTo(":Parameter1"));
+            Assert.That(command.Parameters["Parameter2"].ParameterName, Is.EqualTo(":Parameter2"));
+            Assert.That(command.Parameters["Parameter3"].ParameterName, Is.EqualTo(":Parameter3"));
+            Assert.That(command.Parameters["Parameter4"].ParameterName, Is.EqualTo("Parameter4")); //Should this work?
 
-            Assert.AreEqual(":Parameter1", command.Parameters[0].ParameterName);
-            Assert.AreEqual(":Parameter2", command.Parameters[1].ParameterName);
-            Assert.AreEqual(":Parameter3", command.Parameters[2].ParameterName);
-            Assert.AreEqual("Parameter4", command.Parameters[3].ParameterName);
+            Assert.That(command.Parameters[0].ParameterName, Is.EqualTo(":Parameter1"));
+            Assert.That(command.Parameters[1].ParameterName, Is.EqualTo(":Parameter2"));
+            Assert.That(command.Parameters[2].ParameterName, Is.EqualTo(":Parameter3"));
+            Assert.That(command.Parameters[3].ParameterName, Is.EqualTo("Parameter4"));
         }
 
         [Test]
@@ -838,10 +838,10 @@ namespace OpenGauss.Tests
             //Without parenthesis the meaning of [, . and potentially other characters is
             //a syntax error. See comment in OpenGaussCommand.GetClearCommandText() on "usually-redundant parenthesis".
             using var command = new OpenGaussCommand("select :arr[2]", conn);
-            command.Parameters.AddWithValue(":arr", new int[] {5, 4, 3, 2, 1});
+            command.Parameters.AddWithValue(":arr", new int[] { 5, 4, 3, 2, 1 });
             using var rdr = await command.ExecuteReaderAsync();
             rdr.Read();
-            Assert.AreEqual(rdr.GetInt32(0), 4);
+            Assert.That(4, Is.EqualTo(rdr.GetInt32(0)));
         }
 
         [Test]
@@ -869,15 +869,15 @@ namespace OpenGauss.Tests
 
             using var reader = await command.ExecuteReaderAsync(behavior);
 
-            Assert.AreEqual(4, command.Parameters["param1"].Value);
-            Assert.AreEqual(5, command.Parameters["param2"].Value);
+            Assert.That(command.Parameters["param1"].Value, Is.EqualTo(4));
+            Assert.That(command.Parameters["param2"].Value, Is.EqualTo(5));
 
             reader.Read();
 
-            Assert.AreEqual(3, reader.GetInt32(0));
-            Assert.AreEqual(4, reader.GetInt32(1));
-            Assert.AreEqual(5, reader.GetInt32(2));
-            Assert.AreEqual(6, reader.GetInt32(3));
+            Assert.That(reader.GetInt32(0), Is.EqualTo(3));
+            Assert.That(reader.GetInt32(1), Is.EqualTo(4));
+            Assert.That(reader.GetInt32(2), Is.EqualTo(5));
+            Assert.That(reader.GetInt32(3), Is.EqualTo(6));
         }
 
         [Test]
@@ -908,8 +908,8 @@ LANGUAGE 'plpgsql' VOLATILE;";
 
                 var result = await command.ExecuteScalarAsync();
 
-                Assert.AreEqual(3, command.Parameters[0].Value);
-                Assert.AreEqual(true, command.Parameters[1].Value);
+                Assert.That(command.Parameters[0].Value, Is.EqualTo(3));
+                Assert.That(command.Parameters[1].Value, Is.EqualTo(true));
             }
         }
 
@@ -923,16 +923,16 @@ LANGUAGE 'plpgsql' VOLATILE;";
             await using var _ = await CreateTempTable(conn, "id SERIAL PRIMARY KEY, name TEXT", out var table);
 
             var command = new OpenGaussCommand($"SELECT * FROM {table}", conn);
-            Assert.AreEqual(UpdateRowSource.Both, command.UpdatedRowSource);
+            Assert.That(command.UpdatedRowSource, Is.EqualTo(UpdateRowSource.Both));
 
             var cmdBuilder = new OpenGaussCommandBuilder();
             var da = new OpenGaussDataAdapter(command);
             cmdBuilder.DataAdapter = da;
-            Assert.IsNotNull(da.SelectCommand);
-            Assert.IsNotNull(cmdBuilder.DataAdapter);
+            Assert.That(da.SelectCommand, Is.Not.Null);
+            Assert.That(cmdBuilder.DataAdapter, Is.Not.Null);
 
             var updateCommand = cmdBuilder.GetUpdateCommand();
-            Assert.AreEqual(UpdateRowSource.None, updateCommand.UpdatedRowSource);
+            Assert.That(updateCommand.UpdatedRowSource, Is.EqualTo(UpdateRowSource.None));
         }
 
         [Test]
@@ -962,8 +962,8 @@ LANGUAGE 'plpgsql' VOLATILE;";
             cmd.Parameters.Add(c);
             using (await cmd.ExecuteReaderAsync(behavior))
             {
-                Assert.AreEqual(5, b.Value);
-                Assert.AreEqual(3, c.Value);
+                Assert.That(b.Value, Is.EqualTo(5));
+                Assert.That(c.Value, Is.EqualTo(3));
             }
         }
 
@@ -1072,7 +1072,7 @@ LANGUAGE 'plpgsql' VOLATILE;";
         [Test]
         [IssueLink("https://github.com/opengauss/opengauss/issues/831")]
         [IssueLink("https://github.com/opengauss/opengauss/issues/2795")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task Many_parameters([Values(PrepareOrNot.NotPrepared, PrepareOrNot.Prepared)] PrepareOrNot prepare)
         {
             if (prepare == PrepareOrNot.Prepared && IsMultiplexing)
@@ -1188,7 +1188,7 @@ LANGUAGE 'plpgsql' VOLATILE;";
             }
         }
 
-        [Test, Timeout(10000)]
+        [Test, CancelAfter(10000)]
         public void Batched_small_then_big_statements_do_not_deadlock_in_sync_io()
         {
             if (IsMultiplexing)
@@ -1229,7 +1229,7 @@ LANGUAGE 'plpgsql' VOLATILE;";
             Assert.That(await cmd.ExecuteScalarAsync(), Is.EqualTo(9));
         }
 
-        [Test, IssueLink("https://github.com/opengauss/opengauss/issues/3509"), Timeout(5000)]
+        [Test, IssueLink("https://github.com/opengauss/opengauss/issues/3509"), CancelAfter(5000)]
         public async Task Bug3509()
         {
             if (IsMultiplexing)
@@ -1278,6 +1278,6 @@ LANGUAGE 'plpgsql' VOLATILE;";
             Assert.That(await cmd2.ExecuteScalarAsync(), Is.EqualTo(1));
         }
 
-        public CommandTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public CommandTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

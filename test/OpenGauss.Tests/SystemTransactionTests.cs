@@ -152,7 +152,7 @@ namespace OpenGauss.Tests
                 scope.Complete();
             }
             AssertNumberOfRows(1);
-            Assert.True(PoolManager.TryGetValue(connString, out var pool));
+            Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
             Assert.That(pool!.Statistics.Idle, Is.EqualTo(1));
 
             using (var conn = new OpenGaussConnection(connString))

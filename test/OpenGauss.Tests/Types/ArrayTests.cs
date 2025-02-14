@@ -60,7 +60,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             using (var cmd = new OpenGaussCommand("SELECT @p", conn))
             {
-                cmd.Parameters.Add(new OpenGaussParameter { ParameterName="p", DataTypeName = "integer[]", Value = DBNull.Value });
+                cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", DataTypeName = "integer[]", Value = DBNull.Value });
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
@@ -166,7 +166,7 @@ namespace OpenGauss.Tests.Types
         [TestCase(ArrayNullabilityMode.PerInstance)]
         public async Task Value_type_array_nullabilities(ArrayNullabilityMode mode)
         {
-            using var pool = CreateTempPool(new OpenGaussConnectionStringBuilder(ConnectionString){ ArrayNullabilityMode = mode}, out var connectionString);
+            using var pool = CreateTempPool(new OpenGaussConnectionStringBuilder(ConnectionString) { ArrayNullabilityMode = mode }, out var connectionString);
             await using var conn = await OpenConnectionAsync(connectionString);
             await using var cmd = new OpenGaussCommand("SELECT onedim, twodim FROM (VALUES" +
                                                     "('{1, 2, 3, 4}'::int[],'{{1, 2},{3, 4}}'::int[][])," +
@@ -181,10 +181,10 @@ namespace OpenGauss.Tests.Types
                 var value = reader.GetValue(0);
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int[])));
-                Assert.That(value, Is.EqualTo(new []{1, 2, 3, 4}));
+                Assert.That(value, Is.EqualTo(new[] { 1, 2, 3, 4 }));
                 Assert.That(reader.GetFieldType(1), Is.EqualTo(typeof(Array)));
                 Assert.That(reader.GetValue(1).GetType(), Is.EqualTo(typeof(int[,])));
-                Assert.That(reader.GetValue(1), Is.EqualTo(new [,]{{1, 2}, {3, 4}}));
+                Assert.That(reader.GetValue(1), Is.EqualTo(new[,] { { 1, 2 }, { 3, 4 } }));
                 reader.Read();
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(() => reader.GetValue(0), Throws.Exception.TypeOf<InvalidOperationException>());
@@ -196,40 +196,40 @@ namespace OpenGauss.Tests.Types
                 value = reader.GetValue(0);
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[])));
-                Assert.That(value, Is.EqualTo(new int?[]{1, 2, 3, 4}));
+                Assert.That(value, Is.EqualTo(new int?[] { 1, 2, 3, 4 }));
                 value = reader.GetValue(1);
                 Assert.That(reader.GetFieldType(1), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[,])));
-                Assert.That(value, Is.EqualTo(new int?[,]{{1, 2}, {3, 4}}));
+                Assert.That(value, Is.EqualTo(new int?[,] { { 1, 2 }, { 3, 4 } }));
                 reader.Read();
                 value = reader.GetValue(0);
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[])));
-                Assert.That(value, Is.EqualTo(new int?[]{5, null, 6, 7}));
+                Assert.That(value, Is.EqualTo(new int?[] { 5, null, 6, 7 }));
                 value = reader.GetValue(1);
                 Assert.That(reader.GetFieldType(1), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[,])));
-                Assert.That(value, Is.EqualTo(new int?[,]{{5, null},{6, 7}}));
+                Assert.That(value, Is.EqualTo(new int?[,] { { 5, null }, { 6, 7 } }));
                 break;
             case ArrayNullabilityMode.PerInstance:
                 reader.Read();
                 value = reader.GetValue(0);
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int[])));
-                Assert.That(value, Is.EqualTo(new []{1, 2, 3, 4}));
+                Assert.That(value, Is.EqualTo(new[] { 1, 2, 3, 4 }));
                 value = reader.GetValue(1);
                 Assert.That(reader.GetFieldType(1), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int[,])));
-                Assert.That(value, Is.EqualTo(new [,]{{1, 2}, {3, 4}}));
+                Assert.That(value, Is.EqualTo(new[,] { { 1, 2 }, { 3, 4 } }));
                 reader.Read();
                 value = reader.GetValue(0);
                 Assert.That(reader.GetFieldType(0), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[])));
-                Assert.That(value, Is.EqualTo(new int?[]{5, null, 6, 7}));
+                Assert.That(value, Is.EqualTo(new int?[] { 5, null, 6, 7 }));
                 value = reader.GetValue(1);
                 Assert.That(reader.GetFieldType(1), Is.EqualTo(typeof(Array)));
                 Assert.That(value.GetType(), Is.EqualTo(typeof(int?[,])));
-                Assert.That(value, Is.EqualTo(new int?[,]{{5, null},{6, 7}}));
+                Assert.That(value, Is.EqualTo(new int?[,] { { 5, null }, { 6, 7 } }));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
@@ -320,12 +320,12 @@ namespace OpenGauss.Tests.Types
         {
             using var conn = await OpenConnectionAsync();
 
-            var expected = new int[conn.Settings.WriteBufferSize/4 + 100];
+            var expected = new int[conn.Settings.WriteBufferSize / 4 + 100];
             for (var i = 0; i < expected.Length; i++)
                 expected[i] = i;
 
             using var cmd = new OpenGaussCommand("SELECT @p", conn);
-            var p = new OpenGaussParameter {ParameterName = "p", Value = expected};
+            var p = new OpenGaussParameter { ParameterName = "p", Value = expected };
             cmd.Parameters.Add(p);
 
             using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
@@ -337,14 +337,14 @@ namespace OpenGauss.Tests.Types
         public async Task Long_two_dimensional()
         {
             using var conn = await OpenConnectionAsync();
-            var len = conn.Settings.WriteBufferSize/2 + 100;
+            var len = conn.Settings.WriteBufferSize / 2 + 100;
             var expected = new int[2, len];
             for (var i = 0; i < len; i++)
                 expected[0, i] = i;
             for (var i = 0; i < len; i++)
                 expected[1, i] = i;
             using var cmd = new OpenGaussCommand("SELECT @p", conn);
-            var p = new OpenGaussParameter {ParameterName = "p", Value = expected};
+            var p = new OpenGaussParameter { ParameterName = "p", Value = expected };
             cmd.Parameters.Add(p);
             using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
             reader.Read();
@@ -357,9 +357,9 @@ namespace OpenGauss.Tests.Types
             using var conn = await OpenConnectionAsync();
             var largeString = new StringBuilder();
             largeString.Append('a', conn.Settings.WriteBufferSize);
-            var expected = new[] {"value1", null, largeString.ToString(), "val3"};
+            var expected = new[] { "value1", null, largeString.ToString(), "val3" };
             using var cmd = new OpenGaussCommand("SELECT @p", conn);
-            var p = new OpenGaussParameter("p", OpenGaussDbType.Array | OpenGaussDbType.Text) {Value = expected};
+            var p = new OpenGaussParameter("p", OpenGaussDbType.Array | OpenGaussDbType.Text) { Value = expected };
             cmd.Parameters.Add(p);
             using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess);
             reader.Read();
@@ -425,14 +425,14 @@ namespace OpenGauss.Tests.Types
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 reader.Read();
-                Assert.That(reader.GetFieldValue<int[]>(0), Is.EqualTo(new[] {8, 9}));
+                Assert.That(reader.GetFieldValue<int[]>(0), Is.EqualTo(new[] { 8, 9 }));
             }
 
             using (var cmd = new OpenGaussCommand("SELECT '[2:3][2:3]={ {8,9}, {1,2} }'::INT[][]", conn))
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 reader.Read();
-                Assert.That(reader.GetFieldValue<int[,]>(0), Is.EqualTo(new[,] {{8, 9}, {1, 2}}));
+                Assert.That(reader.GetFieldValue<int[,]>(0), Is.EqualTo(new[,] { { 8, 9 }, { 1, 2 } }));
             }
         }
 
@@ -630,9 +630,9 @@ namespace OpenGauss.Tests.Types
             using var cmd = new OpenGaussCommand("SELECT '{}'::INT[], '{}'::INT[]", conn);
             using var reader = await cmd.ExecuteReaderAsync();
             await reader.ReadAsync();
-            Assert.AreSame(reader.GetFieldValue<int[]>(0), reader.GetFieldValue<int[]>(1));
+            Assert.That(reader.GetFieldValue<int[]>(1), Is.SameAs(reader.GetFieldValue<int[]>(0)));
             // Unlike T[], List<T> is mutable so we should not return the same instance
-            Assert.AreNotSame(reader.GetFieldValue<List<int>>(0), reader.GetFieldValue<List<int>>(1));
+            Assert.That(reader.GetFieldValue<List<int>>(1), Is.Not.SameAs(reader.GetFieldValue<List<int>>(0)));
         }
 
         async Task AssertIListRoundtrips<TElement>(OpenGaussConnection conn, IEnumerable<TElement> value)
@@ -649,6 +649,6 @@ namespace OpenGauss.Tests.Types
         class IntList : List<int> { }
         class MisleadingIntList<T> : List<int> { }
 
-        public ArrayTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public ArrayTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

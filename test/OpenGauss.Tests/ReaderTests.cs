@@ -171,7 +171,7 @@ CREATE TABLE {table} (name TEXT) WITH OIDS;
 INSERT INTO {table} (name) VALUES ('a');
 UPDATE {table} SET name='b' WHERE name='doesnt_exist';";
 
-            using (var cmd = new OpenGaussCommand(query,conn))
+            using (var cmd = new OpenGaussCommand(query, conn))
             {
                 using var reader = await cmd.ExecuteReaderAsync(Behavior);
 
@@ -213,7 +213,7 @@ UPDATE {table} SET name='b' WHERE name='doesnt_exist';";
             using var dr = await command.ExecuteReaderAsync(Behavior);
             dr.Read();
             var result = dr.GetString(0);
-            Assert.AreEqual(text, result);
+            Assert.That(result, Is.EqualTo(text));
         }
 
         [Test]
@@ -239,7 +239,7 @@ INSERT INTO {table} (name) VALUES ('Text with '' single quote');");
             using var dr = await command.ExecuteReaderAsync(Behavior);
             dr.Read();
             var result = dr.GetString(0);
-            Assert.AreEqual(test, result);
+            Assert.That(result, Is.EqualTo(test));
         }
 
         [Test]
@@ -494,7 +494,7 @@ INSERT INTO {table} (name) VALUES ('Text with '' single quote');");
             param.Direction = ParameterDirection.Output;
             command.Parameters.Add(param);
             using var dr = await command.ExecuteReaderAsync(Behavior);
-            Assert.IsFalse(dr.NextResult());
+            Assert.That(dr.NextResult(), Is.False);
         }
 
         [Test]
@@ -526,7 +526,7 @@ INSERT INTO {table} (name) VALUES ('Text with '' single quote');");
             using var conn = await OpenConnectionAsync();
             var command = new OpenGaussCommand("SELECT 1", conn);
             using var dr = await command.ExecuteReaderAsync(Behavior);
-            while (dr.Read()) {}
+            while (dr.Read()) { }
             Assert.That(() => dr[0], Throws.Exception.TypeOf<InvalidOperationException>());
         }
 
@@ -649,7 +649,7 @@ LANGUAGE 'plpgsql'");
             // resources are referenced by the exception above, which is very likely to escape the using statement of the command.
             cmd.Dispose();
             var cmd2 = conn.CreateCommand();
-            Assert.AreNotSame(cmd2, cmd);
+            Assert.That(cmd2, Is.Not.SameAs(cmd));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/967")]
@@ -684,7 +684,7 @@ LANGUAGE 'plpgsql'");
             // resources are referenced by the exception above, which is very likely to escape the using statement of the command.
             cmd.Dispose();
             var cmd2 = conn.CreateCommand();
-            Assert.AreNotSame(cmd2, cmd);
+            Assert.That(cmd2, Is.Not.SameAs(cmd));
         }
 
         #region SchemaOnly
@@ -710,7 +710,7 @@ LANGUAGE 'plpgsql'");
             var i = 0;
             while (dr.Read())
                 i++;
-            Assert.AreEqual(0, i);
+            Assert.That(i, Is.EqualTo(0));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/2827")]
@@ -721,8 +721,8 @@ LANGUAGE 'plpgsql'");
 
             using var cmd = new OpenGaussCommand($"SELECT * FROM {table}", conn);
             using var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SchemaOnly);
-            Assert.False(reader.NextResult());
-            Assert.False(reader.NextResult());
+            Assert.That(reader.NextResult(), Is.False);
+            Assert.That(reader.NextResult(), Is.False);
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/4124")]
@@ -906,7 +906,7 @@ LANGUAGE 'plpgsql'");
             await using var _ = await CreateTempTable(conn, "name TEXT", out var table);
             using var command = new OpenGaussCommand($"DELETE FROM {table} WHERE name = 'unknown'", conn);
             using var reader = await command.ExecuteReaderAsync(Behavior);
-            Assert.IsFalse(reader.HasRows);
+            Assert.That(reader.HasRows, Is.False);
         }
 
         [Test]
@@ -915,9 +915,9 @@ LANGUAGE 'plpgsql'");
             using var conn = await OpenConnectionAsync();
             using var command = new OpenGaussCommand("SELECT CAST('1 hour' AS interval) AS dauer", conn);
             using var dr = await command.ExecuteReaderAsync(Behavior);
-            Assert.IsTrue(dr.HasRows);
-            Assert.IsTrue(dr.Read());
-            Assert.IsTrue(dr.HasRows);
+            Assert.That(dr.HasRows, Is.True);
+            Assert.That(dr.Read(), Is.True);
+            Assert.That(dr.HasRows, Is.True);
             var ts = dr.GetTimeSpan(0);
         }
 
@@ -957,7 +957,7 @@ LANGUAGE plpgsql VOLATILE";
             using var cmd = new OpenGaussCommand($"SELECT {function}(1)", conn);
             using var reader = await cmd.ExecuteReaderAsync(Behavior);
 
-            
+
             Assert.That(() => reader.NextResult(),
                 Throws.Exception.TypeOf<PostgresException>()
                     .With.Property(nameof(PostgresException.SqlState)).EqualTo("23503"));
@@ -1234,8 +1234,8 @@ LANGUAGE plpgsql VOLATILE";
 
             reader.GetInt32(0);
 
-            Assert.Zero(reader.Connector.ReadBuffer.ReadBytesLeft);
-            Assert.NotZero(reader.Connector.ReadBuffer.ReadPosition);
+            Assert.That(reader.Connector.ReadBuffer.ReadBytesLeft, Is.Not.Zero);
+            Assert.That(reader.Connector.ReadBuffer.ReadPosition, Is.Not.Zero);
 
             writeBuffer.WriteInt32(byteValue.Length);
             writeBuffer.WriteBytes(byteValue);
@@ -1619,7 +1619,7 @@ LANGUAGE plpgsql VOLATILE";
 
 #if DEBUG
         [Test, Description("Tests that everything goes well when a type handler generates a OpenGaussSafeReadException")]
-        [Timeout(5000)]
+        [CancelAfter(5000)]
         public async Task SafeReadException()
         {
             if (IsMultiplexing)
@@ -1637,7 +1637,7 @@ LANGUAGE plpgsql VOLATILE";
         }
 
         [Test, Description("Tests that when a type handler generates an exception that isn't a OpenGaussSafeReadException, the connection is properly broken")]
-        [Timeout(5000)]
+        [CancelAfter(5000)]
         public async Task Non_SafeReadException()
         {
             if (IsMultiplexing)
@@ -1680,7 +1680,7 @@ LANGUAGE plpgsql VOLATILE";
             await using (var reader = await cmd.ExecuteReaderAsync())
             {
                 // Successfully read the first row
-                Assert.True(await reader.ReadAsync());
+                Assert.That(await reader.ReadAsync(), Is.True);
                 Assert.That(reader.GetInt32(0), Is.EqualTo(1));
 
                 // Attempt to read the second row - simulate blocking and cancellation
@@ -1729,7 +1729,7 @@ LANGUAGE plpgsql VOLATILE";
             await using (var reader = await cmd.ExecuteReaderAsync())
             {
                 // Successfully read the first row
-                Assert.True(await reader.ReadAsync());
+                Assert.That(await reader.ReadAsync(), Is.True);
                 Assert.That(reader.GetInt32(0), Is.EqualTo(1));
 
                 // Attempt to read the second row - simulate blocking and cancellation
@@ -1781,7 +1781,7 @@ LANGUAGE plpgsql VOLATILE";
             await using (var reader = await cmd.ExecuteReaderAsync())
             {
                 // Successfully read the first resultset
-                Assert.True(await reader.ReadAsync());
+                Assert.That(await reader.ReadAsync(), Is.True);
                 Assert.That(reader.GetInt32(0), Is.EqualTo(1));
 
                 // Attempt to advance to the second resultset - simulate blocking and cancellation
@@ -1832,7 +1832,7 @@ LANGUAGE plpgsql VOLATILE";
             await using var reader = await cmd.ExecuteReaderAsync(Behavior);
 
             // Successfully read the first row
-            Assert.True(await reader.ReadAsync());
+            Assert.That(await reader.ReadAsync(), Is.True);
             Assert.That(reader.GetInt32(0), Is.EqualTo(1));
 
             // Attempt to read the second row - simulate blocking and cancellation
@@ -1877,7 +1877,7 @@ LANGUAGE plpgsql VOLATILE";
             await using var reader = await cmd.ExecuteReaderAsync(Behavior);
 
             // Successfully read the first resultset
-            Assert.True(await reader.ReadAsync());
+            Assert.That(await reader.ReadAsync(), Is.True);
             Assert.That(reader.GetInt32(0), Is.EqualTo(1));
 
             // Attempt to read the second row - simulate blocking and cancellation
@@ -1985,12 +1985,12 @@ LANGUAGE plpgsql VOLATILE";
             await using var cmd = new OpenGaussCommand("SELECT generate_series(1, 100); SELECT generate_series(1, 100)", conn);
             using var cts = new CancellationTokenSource();
             await using var reader = await cmd.ExecuteReaderAsync(Behavior);
-            Assert.IsTrue(await reader.ReadAsync());
+            Assert.That(await reader.ReadAsync(), Is.True);
             cts.Cancel();
             while (await reader.ReadAsync(cts.Token)) { }
-            Assert.IsTrue(await reader.NextResultAsync(cts.Token));
+            Assert.That(await reader.NextResultAsync(cts.Token), Is.True);
             while (await reader.ReadAsync(cts.Token)) { }
-            Assert.IsFalse(conn.Connector!.UserCancellationRequested);
+            Assert.That(conn.Connector!.UserCancellationRequested, Is.False);
         }
 
         #endregion Cancellation
@@ -1998,7 +1998,7 @@ LANGUAGE plpgsql VOLATILE";
         #region Timeout
 
         [Test, Description("Timeouts sequential ReadAsGetFieldValueAsync")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task GetFieldValueAsync_sequential_timeout()
         {
             if (IsMultiplexing)
@@ -2037,7 +2037,7 @@ LANGUAGE plpgsql VOLATILE";
         }
 
         [Test, Description("Timeouts sequential IsDBNullAsync")]
-        [Timeout(10000)]
+        [CancelAfter(10000)]
         public async Task IsDBNullAsync_sequential_timeout()
         {
             if (IsMultiplexing)

@@ -105,7 +105,7 @@ namespace OpenGauss.Tests.Types
                 conn.ReloadTypes();
                 using (var cmd = new OpenGaussCommand("SELECT @p", conn))
                 {
-                    cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", Value = new SomeComposite { X = 8, SomeText = "foo" }});
+                    cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", Value = new SomeComposite { X = 8, SomeText = "foo" } });
                     using (var reader = cmd.ExecuteReader())
                     {
                         reader.Read();
@@ -197,7 +197,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             conn.TypeMapper.MapComposite<SomeComposite>("composite3");
 
-            var expected = new SomeComposite {X = 8, SomeText = "foo"};
+            var expected = new SomeComposite { X = 8, SomeText = "foo" };
             using var cmd = new OpenGaussCommand("SELECT @p1::composite3, @p2::composite3", conn);
             cmd.Parameters.Add(new OpenGaussParameter
             {
@@ -278,9 +278,10 @@ namespace OpenGauss.Tests.Types
             conn.TypeMapper.MapComposite<SomeCompositeContainer>("composite_container");
             conn.TypeMapper.MapComposite<SomeComposite>("composite_contained");
 
-            var expected = new SomeCompositeContainer {
+            var expected = new SomeCompositeContainer
+            {
                 A = 4,
-                Contained = new SomeComposite {X = 8, SomeText = "foo"}
+                Contained = new SomeComposite { X = 8, SomeText = "foo" }
             };
 
             using var cmd = new OpenGaussCommand("SELECT @p::composite_container", conn);
@@ -306,7 +307,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             conn.TypeMapper.MapComposite<CompositeStruct>("composite_struct");
 
-            var expected = new CompositeStruct {X = 8, SomeText = "foo"};
+            var expected = new CompositeStruct { X = 8, SomeText = "foo" };
             using var cmd = new OpenGaussCommand("SELECT @p::composite_struct", conn);
             cmd.Parameters.AddWithValue("p", expected);
             using var reader = cmd.ExecuteReader();
@@ -411,9 +412,9 @@ CREATE TYPE address AS
             conn.ReloadTypes();
             conn.TypeMapper.MapComposite<Address>();
 
-            var expected = new Address { PostalCode = "12345", Street = "Main St."};
+            var expected = new Address { PostalCode = "12345", Street = "Main St." };
             using var cmd = new OpenGaussCommand(@"SELECT @p", conn);
-            cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", Value=expected });
+            cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", Value = expected });
             using var reader = cmd.ExecuteReader();
             reader.Read();
             var actual = reader.GetFieldValue<Address>(0);
@@ -497,8 +498,8 @@ CREATE TYPE address AS
             conn.ReloadTypes();
 
             Assert.Throws<ArgumentException>(() => conn.TypeMapper.MapComposite<TableAsCompositeType>("table_as_composite3"));
-            Assert.Null(conn.Connector!.DatabaseInfo.CompositeTypes.SingleOrDefault(c => c.Name.Contains("table_as_composite3")));
-            Assert.Null(conn.Connector!.DatabaseInfo.ArrayTypes.SingleOrDefault(c => c.Name.Contains("table_as_composite3")));
+            Assert.That(conn.Connector!.DatabaseInfo.CompositeTypes.SingleOrDefault(c => c.Name.Contains("table_as_composite3")), Is.Null);
+            Assert.That(conn.Connector!.DatabaseInfo.ArrayTypes.SingleOrDefault(c => c.Name.Contains("table_as_composite3")), Is.Null);
         }
 
         #endregion Table as Composite

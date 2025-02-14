@@ -238,7 +238,7 @@ CREATE TYPE {type2} AS ENUM ('label1', 'label2', 'label3')");
             };
             cmd.Parameters.Add(p);
             var result = await cmd.ExecuteScalarAsync();
-            Assert.AreEqual(expected, result);
+            Assert.That(result, Is.EqualTo(expected));
         }
 
         [Test]
@@ -301,7 +301,7 @@ CREATE TYPE {type2} AS ENUM ('label1', 'label2', 'label3')");
             await conn.ExecuteNonQueryAsync($"CREATE TYPE {type} AS ENUM ('sad', 'ok', 'happy')");
             conn.ReloadTypes();
             conn.TypeMapper.MapEnum<Mood>(type);
-            var expected = new[] {Mood.Ok, Mood.Happy};
+            var expected = new[] { Mood.Ok, Mood.Happy };
             using var cmd = new OpenGaussCommand($"SELECT @p1::{type}[], @p2::{type}[]", conn);
             var p1 = new OpenGaussParameter
             {
@@ -309,7 +309,7 @@ CREATE TYPE {type2} AS ENUM ('label1', 'label2', 'label3')");
                 DataTypeName = $"{type}[]",
                 Value = expected
             };
-            var p2 = new OpenGaussParameter {ParameterName = "p2", Value = expected};
+            var p2 = new OpenGaussParameter { ParameterName = "p2", Value = expected };
             cmd.Parameters.Add(p1);
             cmd.Parameters.Add(p2);
             using var reader = await cmd.ExecuteReaderAsync();
@@ -353,7 +353,7 @@ CREATE TABLE {table} (id SERIAL, value1 {type}, value2 {type});");
             const string expected = "Banana";
             using var cmd = new OpenGaussCommand($"INSERT INTO {table} (id, value1, value2) VALUES (default, @p1, @p2);", conn);
             cmd.Parameters.AddWithValue("p2", OpenGaussDbType.Unknown, expected);
-            var p2 = new OpenGaussParameter("p1", OpenGaussDbType.Unknown) {Value = expected};
+            var p2 = new OpenGaussParameter("p1", OpenGaussDbType.Unknown) { Value = expected };
             cmd.Parameters.Add(p2);
             cmd.ExecuteNonQuery();
         }
@@ -375,7 +375,7 @@ CREATE TABLE {table} (id SERIAL, value1 {type}, value2 {type});");
             await using var reader = await cmd.ExecuteReaderAsync();
             await reader.ReadAsync();
 
-            Assert.AreEqual("happy", reader.GetFieldValue<string>(0));
+            Assert.That(reader.GetFieldValue<string>(0), Is.EqualTo("happy"));
         }
 
         [Test, Description("Tests that a a C# enum an be written to an enum backend when passed as dbUnknown")]

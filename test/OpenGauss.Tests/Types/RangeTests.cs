@@ -55,7 +55,7 @@ namespace OpenGauss.Tests.Types
             conn.ReloadTypes();
             using (var cmd = new OpenGaussCommand("SELECT @p", conn))
             {
-                cmd.Parameters.Add(new OpenGaussParameter { ParameterName="p", DataTypeName = "int4range", Value = DBNull.Value });
+                cmd.Parameters.Add(new OpenGaussParameter { ParameterName = "p", DataTypeName = "int4range", Value = DBNull.Value });
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
@@ -128,23 +128,23 @@ namespace OpenGauss.Tests.Types
 
             //different bounds
             var r2 = new OpenGaussRange<int>(1, true, false, 2, false, false);
-            Assert.IsFalse(r1 == r2);
+            Assert.That(r1 == r2, Is.False);
 
             //lower bound is not inclusive
             var r3 = new OpenGaussRange<int>(0, false, false, 1, false, false);
-            Assert.IsFalse(r1 == r3);
+            Assert.That(r1 == r3, Is.False);
 
             //upper bound is inclusive
             var r4 = new OpenGaussRange<int>(0, true, false, 1, true, false);
-            Assert.IsFalse(r1 == r4);
+            Assert.That(r1 == r4, Is.False);
 
             var r5 = new OpenGaussRange<int>(0, true, false, 1, false, false);
-            Assert.IsTrue(r1 == r5);
+            Assert.That(r1 == r5, Is.True);
 
             //check some other combinations while we are here
-            Assert.IsFalse(r2 == r3);
-            Assert.IsFalse(r2 == r4);
-            Assert.IsFalse(r3 == r4);
+            Assert.That(r2 == r3, Is.False);
+            Assert.That(r2 == r4, Is.False);
+            Assert.That(r3 == r4, Is.False);
         }
 
         [Test]
@@ -154,20 +154,20 @@ namespace OpenGauss.Tests.Types
 
             //different upper bound (lower bound shoulnd't matter since it is infinite)
             var r2 = new OpenGaussRange<int>(1, false, true, 2, false, false);
-            Assert.IsFalse(r1 == r2);
+            Assert.That(r1 == r2, Is.False);
 
             //upper bound is inclusive
             var r3 = new OpenGaussRange<int>(0, false, true, 1, true, false);
-            Assert.IsFalse(r1 == r3);
+            Assert.That(r1 == r3, Is.False);
 
             //value of lower bound shouldn't matter since it is infinite
             var r4 = new OpenGaussRange<int>(10, false, true, 1, false, false);
-            Assert.IsTrue(r1 == r4);
+            Assert.That(r1 == r4, Is.False);
 
             //check some other combinations while we are here
-            Assert.IsFalse(r2 == r3);
-            Assert.IsFalse(r2 == r4);
-            Assert.IsFalse(r3 == r4);
+            Assert.That(r2 == r3, Is.False);
+            Assert.That(r2 == r4, Is.False);
+            Assert.That(r3 == r4, Is.False);
         }
 
         [Test]
@@ -175,29 +175,29 @@ namespace OpenGauss.Tests.Types
         {
             OpenGaussRange<int> a = default;
             OpenGaussRange<int> b = OpenGaussRange<int>.Empty;
-            OpenGaussRange<int> c = OpenGaussRange<int>.Parse("(,)");
+            var c = OpenGaussRange<int>.Parse("(,)");
 
-            Assert.IsFalse(a.Equals(b));
-            Assert.IsFalse(a.Equals(c));
-            Assert.IsFalse(b.Equals(c));
-            Assert.AreNotEqual(a.GetHashCode(), b.GetHashCode());
-            Assert.AreNotEqual(a.GetHashCode(), c.GetHashCode());
-            Assert.AreNotEqual(b.GetHashCode(), c.GetHashCode());
+            Assert.That(a.Equals(b), Is.False);
+            Assert.That(a.Equals(c), Is.False);
+            Assert.That(b.Equals(c), Is.False);
+            Assert.That(a.GetHashCode(), Is.Not.EqualTo(b.GetHashCode()));
+            Assert.That(a.GetHashCode(), Is.Not.EqualTo(c.GetHashCode()));
+            Assert.That(b.GetHashCode(), Is.Not.EqualTo(c.GetHashCode()));
         }
 
         [Test]
         public void GetHashCode_reference_types()
         {
-            OpenGaussRange<string> a= default;
+            OpenGaussRange<string> a = default;
             OpenGaussRange<string> b = OpenGaussRange<string>.Empty;
-            OpenGaussRange<string> c = OpenGaussRange<string>.Parse("(,)");
+            var c = OpenGaussRange<string>.Parse("(,)");
 
-            Assert.IsFalse(a.Equals(b));
-            Assert.IsFalse(a.Equals(c));
-            Assert.IsFalse(b.Equals(c));
-            Assert.AreNotEqual(a.GetHashCode(), b.GetHashCode());
-            Assert.AreNotEqual(a.GetHashCode(), c.GetHashCode());
-            Assert.AreNotEqual(b.GetHashCode(), c.GetHashCode());
+            Assert.That(a.Equals(b), Is.False);
+            Assert.That(a.Equals(c), Is.False);
+            Assert.That(b.Equals(c), Is.False);
+            Assert.That(a.GetHashCode(), Is.Not.EqualTo(b.GetHashCode()));
+            Assert.That(a.GetHashCode(), Is.Not.EqualTo(c.GetHashCode()));
+            Assert.That(b.GetHashCode(), Is.Not.EqualTo(c.GetHashCode()));
         }
 
         [Test]
@@ -234,7 +234,7 @@ namespace OpenGauss.Tests.Types
         {
             var wellKnownText = input.ToString();
             var result = OpenGaussRange<DateTime>.Parse(wellKnownText);
-            Assert.AreEqual(input, result);
+            Assert.That(result, Is.EqualTo(input));
         }
 
         [Theory]
@@ -244,7 +244,7 @@ namespace OpenGauss.Tests.Types
         public void Parse_empty(string value)
         {
             var result = OpenGaussRange<int>.Parse(value);
-            Assert.AreEqual(OpenGaussRange<int>.Empty, result);
+            Assert.That(result, Is.EqualTo(OpenGaussRange<int>.Empty));
         }
 
         [Theory]
@@ -256,7 +256,7 @@ namespace OpenGauss.Tests.Types
         public void Roundtrip_int_ranges_through_ToString_and_Parse(string input)
         {
             var result = OpenGaussRange<int>.Parse(input);
-            Assert.AreEqual(input.Replace(" ", null), result.ToString());
+            Assert.That(result.ToString(), Is.EqualTo(input.Replace(" ", null)));
         }
 
         [Theory]
@@ -276,7 +276,7 @@ namespace OpenGauss.Tests.Types
         public void Int_range_Parse_ToString_returns_normalized_representations(string input, string normalized)
         {
             var result = OpenGaussRange<int>.Parse(input);
-            Assert.AreEqual(normalized, result.ToString());
+            Assert.That(result.ToString(), Is.EqualTo(normalized));
         }
 
         [Theory]
@@ -296,7 +296,7 @@ namespace OpenGauss.Tests.Types
         public void Nullable_int_range_Parse_ToString_returns_normalized_representations(string input, string normalized)
         {
             var result = OpenGaussRange<int?>.Parse(input);
-            Assert.AreEqual(normalized, result.ToString());
+            Assert.That(result.ToString(), Is.EqualTo(normalized));
         }
 
         [Theory]
@@ -307,7 +307,7 @@ namespace OpenGauss.Tests.Types
         public void String_range_Parse_ToString_returns_normalized_representations(string input, string normalized)
         {
             var result = OpenGaussRange<string>.Parse(input);
-            Assert.AreEqual(normalized, result.ToString());
+            Assert.That(result.ToString(), Is.EqualTo(normalized));
         }
 
         [Theory]
@@ -315,7 +315,7 @@ namespace OpenGauss.Tests.Types
         public void Roundtrip_string_ranges_through_ToString_and_Parse2(string input)
         {
             var result = OpenGaussRange<SimpleType>.Parse(input);
-            Assert.AreEqual(input, result.ToString());
+            Assert.That(result.ToString(), Is.EqualTo(input));
         }
 
         [Theory]
@@ -334,12 +334,14 @@ namespace OpenGauss.Tests.Types
             var converter = TypeDescriptor.GetConverter(typeof(OpenGaussRange<int>));
 
             // Act
-            Assert.IsInstanceOf<OpenGaussRange<int>.RangeTypeConverter>(converter);
-            Assert.IsTrue(converter.CanConvertFrom(typeof(string)));
+            //   Assert.IsInstanceOf<OpenGaussRange<int>.RangeTypeConverter>(converter);
+            Assert.That(converter, Is.InstanceOf<OpenGaussRange<int>.RangeTypeConverter>());
+
+            Assert.That(converter.CanConvertFrom(typeof(string)), Is.True);
             var result = converter.ConvertFromString("empty");
 
             // Assert
-            Assert.AreEqual(OpenGaussRange<int>.Empty, result);
+            Assert.That(result, Is.EqualTo(OpenGaussRange<int>.Empty));
         }
 
         #endregion
@@ -410,6 +412,6 @@ namespace OpenGauss.Tests.Types
 
         #endregion
 
-        public RangeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public RangeTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }

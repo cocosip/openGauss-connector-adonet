@@ -31,27 +31,27 @@ namespace OpenGauss.Tests.Types
 
         [Test]
         public void Write_class_with_property() =>
-            Write<ClassWithProperty>((execute, expected) => Assert.AreEqual(expected.Value, execute().GetString(0)));
+            Write<ClassWithProperty>((execute, expected) => Assert.That(execute().GetString(0), Is.EqualTo(expected.Value)));
 
         [Test]
         public void Write_class_with_field() =>
-            Write<ClassWithField>((execute, expected) => Assert.AreEqual(expected.Value, execute().GetString(0)));
+            Write<ClassWithField>((execute, expected) => Assert.That(execute().GetString(0), Is.EqualTo(expected.Value)));
 
         [Test]
         public void Write_struct_with_property() =>
-            Write<StructWithProperty>((execute, expected) => Assert.AreEqual(expected.Value, execute().GetString(0)));
+            Write<StructWithProperty>((execute, expected) => Assert.That(execute().GetString(0), Is.EqualTo(expected.Value)));
 
         [Test]
         public void Write_struct_with_field() =>
-            Write<StructWithField>((execute, expected) => Assert.AreEqual(expected.Value, execute().GetString(0)));
+            Write<StructWithField>((execute, expected) => Assert.That(execute().GetString(0), Is.EqualTo(expected.Value)));
 
         [Test]
         public void Write_type_with_two_properties() =>
             Write<TypeWithTwoProperties>((execute, expected) =>
             {
                 var actual = execute();
-                Assert.AreEqual(expected.IntValue, actual.GetInt32(0));
-                Assert.AreEqual(expected.StringValue, actual.GetString(1));
+                Assert.That(actual.GetInt32(0), Is.EqualTo(expected.IntValue));
+                Assert.That(actual.GetString(1), Is.EqualTo(expected.StringValue));
             });
 
         [Test]
@@ -59,8 +59,8 @@ namespace OpenGauss.Tests.Types
             Write<TypeWithTwoPropertiesReversed>((execute, expected) =>
             {
                 var actual = execute();
-                Assert.AreEqual(expected.IntValue, actual.GetInt32(1));
-                Assert.AreEqual(expected.StringValue, actual.GetString(0));
+                Assert.That(actual.GetInt32(1), Is.EqualTo(expected.IntValue));
+                Assert.That(actual.GetString(0), Is.EqualTo(expected.StringValue));
             });
 
         [Test]

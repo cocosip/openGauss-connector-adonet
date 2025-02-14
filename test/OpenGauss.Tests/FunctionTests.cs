@@ -37,7 +37,7 @@ namespace OpenGauss.Tests
         public void Param_Output()
         {
             using var conn = OpenConnection();
-            
+
             conn.ExecuteNonQuery(@"CREATE FUNCTION pg_temp.echo (IN param_in text, OUT param_out text) AS 'BEGIN param_out=param_in; END;' LANGUAGE 'plpgsql'");
             using var cmd = new OpenGaussCommand("pg_temp.echo", conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -90,14 +90,14 @@ namespace OpenGauss.Tests
             command.Parameters.AddWithValue("hour", 2);
             command.Parameters.AddWithValue("min", 3);
             command.Parameters.AddWithValue("sec", 4);
-            var dt = (DateTime) command.ExecuteScalar()!;
+            var dt = (DateTime)command.ExecuteScalar()!;
 
-            Assert.AreEqual(new DateTime(2015, 8, 1, 2, 3, 4), dt);
+            Assert.That(dt, Is.EqualTo(new DateTime(2015, 8, 1, 2, 3, 4)));
 
             command.Parameters[0].Value = 2014;
             command.Parameters[0].ParameterName = ""; // 2014 will be sent as a positional parameter
-            dt = (DateTime) command.ExecuteScalar()!;
-            Assert.AreEqual(new DateTime(2014, 8, 1, 2, 3, 4), dt);
+            dt = (DateTime)command.ExecuteScalar()!;
+            Assert.That(dt, Is.EqualTo(new DateTime(2014, 8, 1, 2, 3, 4)));
         }
 
         [Test]

@@ -65,10 +65,10 @@ namespace OpenGauss.Tests.Types
             await using (await CreateTempTable(conn, "bytes BYTEA", out var table))
             {
                 // TODO: This is too small to actually test any interesting sequential behavior
-                byte[] expected = {1, 2, 3, 4, 5};
+                byte[] expected = { 1, 2, 3, 4, 5 };
                 await conn.ExecuteNonQueryAsync($"INSERT INTO {table} (bytes) VALUES ({EncodeByteaHex(expected)})");
 
-                string queryText = $"SELECT bytes, 'foo', bytes, bytes, bytes FROM {table}";
+                var queryText = $"SELECT bytes, 'foo', bytes, bytes, bytes FROM {table}";
                 using (var cmd = new OpenGaussCommand(queryText, conn))
                 using (var reader = await cmd.ExecuteReaderAsync(behavior))
                 {
@@ -149,9 +149,9 @@ namespace OpenGauss.Tests.Types
             var inVal = new[] { bytes, bytes };
             cmd.Parameters.AddWithValue("p1", OpenGaussDbType.Bytea | OpenGaussDbType.Array, inVal);
             var retVal = (byte[][]?)await cmd.ExecuteScalarAsync();
-            Assert.AreEqual(inVal.Length, retVal!.Length);
-            Assert.AreEqual(inVal[0], retVal[0]);
-            Assert.AreEqual(inVal[1], retVal[1]);
+            Assert.That(retVal!.Length, Is.EqualTo(inVal.Length));
+            Assert.That(retVal[0], Is.EqualTo(inVal[0]));
+            Assert.That(retVal[1], Is.EqualTo(inVal[1]));
         }
 
 #if !NETSTANDARD2_0
@@ -182,7 +182,7 @@ namespace OpenGauss.Tests.Types
             byte[] toStore = { 0, 1, 255, 254 };
             cmd.Parameters.AddWithValue("@bytes", toStore);
             var result = (byte[]?)await cmd.ExecuteScalarAsync();
-            Assert.AreEqual(toStore, result!);
+            Assert.That(result!, Is.EqualTo(toStore));
         }
 
         [Test]
@@ -194,12 +194,12 @@ namespace OpenGauss.Tests.Types
                 var arr = new byte[20000];
                 for (var i = 0; i < arr.Length; i++)
                 {
-                    arr[i] = (byte) (i & 0xff);
+                    arr[i] = (byte)(i & 0xff);
                 }
 
                 // Big value, should go through "direct buffer"
                 var segment = new ArraySegment<byte>(arr, 17, 18000);
-                cmd.Parameters.Add(new OpenGaussParameter("bytearr", DbType.Binary) {Value = segment});
+                cmd.Parameters.Add(new OpenGaussParameter("bytearr", DbType.Binary) { Value = segment });
                 var returned = (byte[]?)await cmd.ExecuteScalarAsync();
                 Assert.That(segment.SequenceEqual(returned!));
 
@@ -220,7 +220,7 @@ namespace OpenGauss.Tests.Types
 
             using (var cmd = new OpenGaussCommand("select :bytearr", conn))
             {
-                var segment = new ArraySegment<byte>(new byte[] {1, 2, 3}, 1, 2);
+                var segment = new ArraySegment<byte>(new byte[] { 1, 2, 3 }, 1, 2);
                 cmd.Parameters.AddWithValue("bytearr", segment);
                 Assert.That(segment.SequenceEqual((byte[])(await cmd.ExecuteScalarAsync())!));
             }
@@ -236,7 +236,7 @@ namespace OpenGauss.Tests.Types
                 var bytea = new byte[8180];
                 for (var i = 0; i < bytea.Length; i++)
                 {
-                    bytea[i] = (byte) (i%256);
+                    bytea[i] = (byte)(i % 256);
                 }
 
                 using (var cmd = new OpenGaussCommand($"INSERT INTO {table} (field) VALUES (@p)", conn))
@@ -247,6 +247,6 @@ namespace OpenGauss.Tests.Types
             }
         }
 
-        public ByteaTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) {}
+        public ByteaTests(MultiplexingMode multiplexingMode) : base(multiplexingMode) { }
     }
 }
