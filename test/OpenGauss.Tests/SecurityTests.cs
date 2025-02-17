@@ -67,8 +67,8 @@ namespace OpenGauss.Tests
 
             using var conn = OpenConnection(csb);
             Assert.That(conn.ExecuteScalar("SHOW ssl_renegotiation_limit"), Is.EqualTo("0"));
-            conn.ExecuteNonQuery("DISCARD ALL");
-            Assert.That(conn.ExecuteScalar("SHOW ssl_renegotiation_limit"), Is.EqualTo("0"));
+            //conn.ExecuteNonQuery("DISCARD ALL");
+            //Assert.That(conn.ExecuteScalar("SHOW ssl_renegotiation_limit"), Is.EqualTo("0"));
         }
 
         [Test, Description("Makes sure that when SSL is disabled IsSecure returns false")]

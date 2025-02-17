@@ -772,7 +772,7 @@ INSERT INTO {table} VALUES('key1', 'description', '2018-07-03', '2018-07-03 07:0
 
             Assert.That(daDataAdapter.UpdateCommand.Parameters[0].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Varchar));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[1].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Varchar));
-            Assert.That(daDataAdapter.UpdateCommand.Parameters[2].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Date));
+            Assert.That(daDataAdapter.UpdateCommand.Parameters[2].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[3].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[4].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Smallint));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[5].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Money));
@@ -784,7 +784,7 @@ INSERT INTO {table} VALUES('key1', 'description', '2018-07-03', '2018-07-03 07:0
 
             Assert.That(daDataAdapter.UpdateCommand.Parameters[11].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Varchar));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[13].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Varchar));
-            Assert.That(daDataAdapter.UpdateCommand.Parameters[15].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Date));
+            Assert.That(daDataAdapter.UpdateCommand.Parameters[15].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[17].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Timestamp));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[18].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Smallint));
             Assert.That(daDataAdapter.UpdateCommand.Parameters[20].OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Money));

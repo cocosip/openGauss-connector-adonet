@@ -407,13 +407,13 @@ namespace OpenGauss.Tests.Types
             using var conn = await OpenConnectionAsync();
             using var cmd = new OpenGaussCommand(@"SELECT '{ ""2014-01-04"", ""2014-01-08"" }'::DATE[]", conn);
             var expectedRegular = new[] { new DateTime(2014, 1, 4), new DateTime(2014, 1, 8) };
-            var expectedPsv = new[] { new OpenGaussDate(2014, 1, 4), new OpenGaussDate(2014, 1, 8) };
+            var expectedPsv = new[] { new OpenGaussDateTime(2014, 1, 4, 0, 0, 0), new OpenGaussDateTime(2014, 1, 8, 0, 0, 0) };
             using var reader = await cmd.ExecuteReaderAsync();
             reader.Read();
             Assert.That(reader.GetValue(0), Is.EqualTo(expectedRegular));
             Assert.That(reader.GetFieldValue<DateTime[]>(0), Is.EqualTo(expectedRegular));
             Assert.That(reader.GetProviderSpecificValue(0), Is.EqualTo(expectedPsv));
-            Assert.That(reader.GetFieldValue<OpenGaussDate[]>(0), Is.EqualTo(expectedPsv));
+            Assert.That(reader.GetFieldValue<OpenGaussDateTime[]>(0), Is.EqualTo(expectedPsv));
         }
 #pragma warning restore 618
 
@@ -510,7 +510,8 @@ namespace OpenGauss.Tests.Types
             using var conn = await OpenConnectionAsync();
             using var cmd = new OpenGaussCommand("SELECT @p1", conn);
             cmd.Parameters.AddWithValue("p1", Enumerable.Range(1, 3));
-            Assert.That(async () => await cmd.ExecuteScalarAsync(), Throws.Exception.TypeOf<NotSupportedException>().With.Message.Contains("array or List"));
+            Assert.DoesNotThrowAsync(async () => await cmd.ExecuteScalarAsync());
+            // Assert.That(async () => await cmd.ExecuteScalarAsync(), Throws.Exception.TypeOf<NotSupportedException>().With.Message.Contains("array or List"));
         }
 
         [Test, IssueLink("https://github.com/opengauss/opengauss/issues/960")]

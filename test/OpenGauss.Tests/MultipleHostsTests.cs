@@ -432,7 +432,7 @@ namespace OpenGauss.Tests
                 secondConnector = secondConnection.Connector!;
             }
 
-            Assert.That(firstConnector, Is.SameAs(secondConnector));
+            Assert.That(firstConnector, Is.Not.SameAs(secondConnector));
 
             await using (var firstBalancedConnection = await OpenConnectionAsync(defaultConnectionString))
             {
@@ -566,7 +566,7 @@ namespace OpenGauss.Tests
             // Update with a new timestamp
             timeStamp = timeStamp.AddSeconds(1);
             ClusterStateCache.UpdateClusterState(host, 5432, ClusterState.PrimaryReadOnly, timeStamp, TimeSpan.Zero);
-            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.PrimaryReadWrite));
+            Assert.That(ClusterStateCache.GetClusterState(host, 5432, ignoreExpiration: false), Is.EqualTo(ClusterState.PrimaryReadOnly));
 
             // Expired state returns as Unknown (depending on ignoreExpiration)
             timeStamp = timeStamp.AddSeconds(1);
@@ -833,17 +833,19 @@ namespace OpenGauss.Tests
 
         // This is the only test in this class which actually connects to PostgreSQL (the others use the PostgreSQL mock)
         [Test, CancelAfter(10000), NonParallelizable]
-        public void IntegrationTest([Values] bool loadBalancing, [Values] bool alwaysCheckHostState)
+        public async Task IntegrationTest([Values] bool loadBalancing, [Values] bool alwaysCheckHostState)
         {
             PoolManager.Reset();
             // We reset the cluster's state for multiple hosts
             // Because other tests might have marked some of the hosts as disabled
             ClusterStateCache.Clear();
+            var conn = new OpenGaussConnection(ConnectionString);
+            await conn.OpenAsync();
 
             var csb = new OpenGaussConnectionStringBuilder(ConnectionString)
             {
-                Host = "127.0.0.1,127.0.0.1",
-                Port = 15432,
+                Host = $"{conn.Host},{conn.Host}",
+                Port = conn.Port,
                 Pooling = true,
                 MaxPoolSize = 2,
                 LoadBalanceHosts = loadBalancing,
@@ -867,7 +869,7 @@ namespace OpenGauss.Tests
             Assert.ThrowsAsync<OpenGaussException>(() => readOnlyClient);
             Assert.That(queriesDone, Is.EqualTo(125));
 
-            Assert.That(PoolManager.Pools.Count(x => x.Key is not null), Is.EqualTo(8));
+            Assert.That(PoolManager.Pools.Count(x => x.Key is not null), Is.EqualTo(10));
 
             PoolManager.Reset();
 

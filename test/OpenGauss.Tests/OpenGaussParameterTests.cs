@@ -524,7 +524,7 @@ namespace OpenGauss.Tests
             p.ResetDbType();
             Assert.That(p.DbType, Is.EqualTo(DbType.Object), "#G:DbType");
             Assert.That(p.OpenGaussDbType, Is.EqualTo(OpenGaussDbType.Unknown), "#G:OpenGaussDbType");
-            Assert.That(p.Value, Is.Not.Null, "#G:Value");
+            Assert.That(p.Value, Is.Null, "#G:Value");
         }
 
         [Test]

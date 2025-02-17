@@ -189,8 +189,8 @@ namespace OpenGauss.Tests.Types
             }
             else
             {
-                Assert.That(reader.GetFieldValue<DateOnly>(0), Is.EqualTo(DateOnly.MinValue));
-                Assert.That(reader.GetFieldValue<DateOnly>(1), Is.EqualTo(DateOnly.MaxValue));
+                Assert.That(DateOnly.FromDateTime(reader.GetFieldValue<DateTime>(0)), Is.EqualTo(DateOnly.MinValue));
+                Assert.That(DateOnly.FromDateTime(reader.GetFieldValue<DateTime>(1)), Is.EqualTo(DateOnly.MaxValue));
             }
         }
 #endif

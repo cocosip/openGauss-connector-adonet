@@ -325,7 +325,7 @@ namespace OpenGauss.NET.Internal
             {
 #if NET8_0_OR_GREATER
 
-                using (var di = new Rfc2898DeriveBytes(password, salt, iteration, HashAlgorithmName.SHA256))
+                using (var di = new Rfc2898DeriveBytes(password, salt, iteration, HashAlgorithmName.SHA1))
                 {
                     return di.GetBytes(32);
                 }

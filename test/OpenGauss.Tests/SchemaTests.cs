@@ -357,7 +357,7 @@ ALTER TABLE primary_key_data ADD PRIMARY KEY (id);");
                 var dataTable = await GetSchema(conn, "CONSTRAINTCOLUMNS", restrictions);
                 var column = dataTable.Rows.Cast<DataRow>().Single();
 
-                Assert.That(column["table_schema"], Is.EqualTo("gaussdb"));
+                Assert.That(column["table_schema"], Is.EqualTo(conn.UserName));
                 Assert.That(column["table_name"], Is.EqualTo("primary_key_data"));
                 Assert.That(column["column_name"], Is.EqualTo("id"));
                 Assert.That(column["constraint_type"], Is.EqualTo("PRIMARY KEY"));
@@ -383,7 +383,7 @@ ALTER TABLE data ADD PRIMARY KEY (id1, id2);");
                 var columns = dataTable.Rows.Cast<DataRow>()
                     .OrderBy(r => r["ordinal_number"]).ToList();
 
-                Assert.That(columns.All(r => r["table_schema"].Equals("gaussdb")));
+                Assert.That(columns.All(r => r["table_schema"].Equals(conn.UserName)));
                 Assert.That(columns.All(r => r["table_name"].Equals("data")));
                 Assert.That(columns.All(r => r["constraint_type"].Equals("PRIMARY KEY")));
 
@@ -433,27 +433,27 @@ CREATE UNIQUE INDEX idx_unique ON data (f1, f2);
                 var dataTable = await GetSchema(conn, "INDEXES", restrictions);
                 var index = dataTable.Rows.Cast<DataRow>().Single();
 
-                Assert.That(index["table_schema"], Is.EqualTo("gaussdb"));
+                Assert.That(index["table_schema"], Is.EqualTo(conn.UserName));
                 Assert.That(index["table_name"], Is.EqualTo("data"));
                 Assert.That(index["index_name"], Is.EqualTo("idx_unique"));
-                Assert.That(index["type_desc"], Is.EqualTo(""));
+                Assert.That(index["type_desc"], Is.EqualTo(DBNull.Value));
 
                 string[] indexColumnRestrictions = { null!, null!, "data" };
                 var dataTable2 = await GetSchema(conn, "INDEXCOLUMNS", indexColumnRestrictions);
                 var columns = dataTable2.Rows.Cast<DataRow>().ToList();
 
                 Assert.That(columns.All(r => r["constraint_catalog"].Equals(database)));
-                Assert.That(columns.All(r => r["constraint_schema"].Equals("gaussdb")));
+                Assert.That(columns.All(r => r["constraint_schema"].Equals(conn.UserName)));
                 Assert.That(columns.All(r => r["constraint_name"].Equals("idx_unique")));
                 Assert.That(columns.All(r => r["table_catalog"].Equals(database)));
-                Assert.That(columns.All(r => r["table_schema"].Equals("gaussdb")));
+                Assert.That(columns.All(r => r["table_schema"].Equals(conn.UserName)));
                 Assert.That(columns.All(r => r["table_name"].Equals("data")));
                 Assert.That(columns.All(r => r["index_name"].Equals("idx_unique")));
 
                 Assert.That(columns[0]["column_name"], Is.EqualTo("f1"));
                 Assert.That(columns[1]["column_name"], Is.EqualTo("f2"));
 
-                string[] indexColumnRestrictions3 = { (string)database!, "gaussdb", "data", "idx_unique", "f1" };
+                string[] indexColumnRestrictions3 = { (string)database!, conn.UserName!, "data", "idx_unique", "f1" };
                 var dataTable3 = await GetSchema(conn, "INDEXCOLUMNS", indexColumnRestrictions3);
                 var columns3 = dataTable3.Rows.Cast<DataRow>().ToList();
                 Assert.That(columns3.Count, Is.EqualTo(1));

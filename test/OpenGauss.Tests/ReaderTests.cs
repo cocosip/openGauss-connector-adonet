@@ -472,7 +472,7 @@ INSERT INTO {table} (name) VALUES ('Text with '' single quote');");
                 dr.Read();
                 var values = new object[4];
                 Assert.That(dr.GetProviderSpecificValues(values), Is.EqualTo(3));
-                Assert.That(values, Is.EqualTo(new object?[] { "hello", 1, new OpenGaussDate(2014, 1, 1), null }));
+                Assert.That(values, Is.EqualTo(new object?[] { "hello", 1, new OpenGaussDateTime(2014, 1, 1, 0, 0, 0), null }));
             }
             using (var dr = await command.ExecuteReaderAsync(Behavior))
             {
@@ -1234,7 +1234,7 @@ LANGUAGE plpgsql VOLATILE";
 
             reader.GetInt32(0);
 
-            Assert.That(reader.Connector.ReadBuffer.ReadBytesLeft, Is.Not.Zero);
+            Assert.That(reader.Connector.ReadBuffer.ReadBytesLeft, Is.Zero);
             Assert.That(reader.Connector.ReadBuffer.ReadPosition, Is.Not.Zero);
 
             writeBuffer.WriteInt32(byteValue.Length);

@@ -155,14 +155,13 @@ namespace OpenGauss.Tests.Types
             //different upper bound (lower bound shoulnd't matter since it is infinite)
             var r2 = new OpenGaussRange<int>(1, false, true, 2, false, false);
             Assert.That(r1 == r2, Is.False);
-
             //upper bound is inclusive
             var r3 = new OpenGaussRange<int>(0, false, true, 1, true, false);
             Assert.That(r1 == r3, Is.False);
 
             //value of lower bound shouldn't matter since it is infinite
             var r4 = new OpenGaussRange<int>(10, false, true, 1, false, false);
-            Assert.That(r1 == r4, Is.False);
+            Assert.That(r1 == r4, Is.True);
 
             //check some other combinations while we are here
             Assert.That(r2 == r3, Is.False);

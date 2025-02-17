@@ -62,7 +62,7 @@ namespace OpenGauss.Tests.Types
 
             for (var i = 0; i < 4; i++)
             {
-                Assert.That(reader.GetDataTypeName(i), Is.EqualTo($"gaussdb.{type}"));
+                Assert.That(reader.GetDataTypeName(i), Is.EqualTo($"{conn.UserName}.{type}"));
                 Assert.That(reader.GetFieldValue<Mood>(i), Is.EqualTo(Mood.Happy));
                 Assert.That(reader.GetFieldValue<string>(i), Is.EqualTo("happy"));
                 Assert.That(reader.GetValue(i), Is.EqualTo("happy"));
@@ -98,7 +98,7 @@ namespace OpenGauss.Tests.Types
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         reader.Read();
-                        Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                        Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
                         Assert.That(reader.IsDBNull(0), Is.True);
                     }
                 }
@@ -111,7 +111,7 @@ namespace OpenGauss.Tests.Types
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         reader.Read();
-                        Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                        Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
                     }
                 }
 
@@ -121,7 +121,7 @@ namespace OpenGauss.Tests.Types
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
-                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
                 }
             }
             finally
@@ -157,7 +157,7 @@ namespace OpenGauss.Tests.Types
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
-                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
                     Assert.That(reader.IsDBNull(0), Is.True);
                 }
             }
@@ -171,7 +171,7 @@ namespace OpenGauss.Tests.Types
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     reader.Read();
-                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                    Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
                 }
             }
 
@@ -182,7 +182,7 @@ namespace OpenGauss.Tests.Types
             using (var reader = await cmd.ExecuteReaderAsync())
             {
                 reader.Read();
-                Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+                Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
             }
         }
 
@@ -336,7 +336,7 @@ CREATE TYPE {type2} AS ENUM ('label1', 'label2', 'label3')");
             using var reader = await cmd.ExecuteReaderAsync();
             reader.Read();
             Assert.That(reader[0], Is.EqualTo("Sad"));
-            Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"gaussdb.{type}"));
+            Assert.That(reader.GetDataTypeName(0), Is.EqualTo($"{conn.UserName}.{type}"));
             Assert.That(reader[1], Is.EqualTo(new[] { "Ok", "Happy" }));
         }
 
