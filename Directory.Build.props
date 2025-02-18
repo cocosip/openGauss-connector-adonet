@@ -8,7 +8,8 @@
 
 		<Copyright>Copyright 2022 © The OpenGauss Development Team</Copyright>
 		<Company>OpenGauss</Company>
-		<PackageLicenseExpression>MulanPSL2</PackageLicenseExpression>
+		<!--<PackageLicenseExpression>MulanPSL2</PackageLicenseExpression>-->
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageProjectUrl>https://gitee.com/opengauss/openGauss-connector-adonet</PackageProjectUrl>
 		<PackageIcon>openGauss.png</PackageIcon>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -28,6 +29,10 @@
 
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)openGauss.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="../../LICENSE" Pack="true" PackagePath="" />
 	</ItemGroup>
 
 </Project>
