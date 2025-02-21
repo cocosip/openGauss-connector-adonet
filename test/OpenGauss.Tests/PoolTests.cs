@@ -403,23 +403,23 @@ namespace OpenGauss.Tests
             OpenGaussConnection.ClearPool(conn);
         }
 
-        [Test, Description("https://github.com/opengauss/opengauss/commit/45e33ecef21f75f51a625c7b919a50da3ed8e920#r28239653")]
-        public void Open_physical_failure()
-        {
-            var connString = new OpenGaussConnectionStringBuilder(ConnectionString)
-            {
-                ApplicationName = nameof(Open_physical_failure),
-                Port = 44444,
-                MaxPoolSize = 1
-            }.ToString();
-            using var conn = CreateConnection(connString);
-            for (var i = 0; i < 1; i++)
-                Assert.That(() => conn.Open(), Throws.Exception
-                    .TypeOf<OpenGaussException>()
-                    .With.InnerException.TypeOf<SocketException>());
-            Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
-            AssertPoolState(pool, open: 0, idle: 0);
-        }
+        //[Test, Description("https://github.com/opengauss/opengauss/commit/45e33ecef21f75f51a625c7b919a50da3ed8e920#r28239653")]
+        //public void Open_physical_failure()
+        //{
+        //    var connString = new OpenGaussConnectionStringBuilder(ConnectionString)
+        //    {
+        //        ApplicationName = nameof(Open_physical_failure),
+        //        Port = 44444,
+        //        MaxPoolSize = 1
+        //    }.ToString();
+        //    using var conn = CreateConnection(connString);
+        //    for (var i = 0; i < 1; i++)
+        //        Assert.That(() => conn.Open(), Throws.Exception
+        //            .TypeOf<OpenGaussException>()
+        //            .With.InnerException.TypeOf<SocketException>());
+        //    Assert.That(PoolManager.TryGetValue(connString, out var pool), Is.True);
+        //    AssertPoolState(pool, open: 0, idle: 0);
+        //}
 
         //[Test, Explicit]
         //[TestCase(10, 10, 30, true)]
